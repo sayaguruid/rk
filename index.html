@@ -4,28 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ruang Kurikulum</title>
-    
-    <!-- PWA Config -->
     <meta name="theme-color" content="#10b981">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     
-    <!-- Libraries (CDN) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
-
-    <!-- Link ke CSS Eksternal -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- GLOBAL ELEMENTS -->
     <div id="globalLoader" class="loader-overlay hidden">
-        <div class="spinner"></div>
-        <p style="margin-top:16px; font-weight:600;">Memuat Data...</p>
+        <div class="spinner"></div><p style="margin-top:16px; font-weight:600;">Memuat Data...</p>
     </div>
     <div id="toast-container"></div>
 
@@ -52,12 +44,12 @@
                 <div class="brand"><i class="fas fa-shapes"></i> RUANG KURIKULUM</div>
             </div>
             <div class="nav-links">
-                <a class="nav-item active" onclick="App.switchModule('generus', this)"><i class="fas fa-users"></i> Data Generus</a>
-                <a class="nav-item" onclick="App.switchModule('guru', this)"><i class="fas fa-chalkboard-teacher"></i> Data Guru</a>
-                <a class="nav-item" onclick="App.switchModule('jurnal', this)"><i class="fas fa-book-open"></i> Jurnal Pengajian</a>
-                <a class="nav-item" onclick="App.switchModule('jadwal', this)"><i class="fas fa-calendar-alt"></i> Jadwal</a>
-                <a class="nav-item" onclick="App.switchModule('raport', this)"><i class="fas fa-file-pdf"></i> Cetak Raport</a>
-                <a class="nav-item" onclick="App.switchModule('kurikulum', this)"><i class="fas fa-chart-pie"></i> Monitoring Kurikulum</a>
+                <a class="nav-item" onclick="App.loadModule('generus', 'generus.html', this)"><i class="fas fa-users"></i> Data Generus</a>
+                <a class="nav-item" onclick="App.loadModule('guru', 'guru.html', this)"><i class="fas fa-chalkboard-teacher"></i> Data Guru</a>
+                <a class="nav-item" onclick="App.loadModule('jurnal', 'jurnal.html', this)"><i class="fas fa-book-open"></i> Jurnal Pengajian</a>
+                <a class="nav-item" onclick="App.loadModule('jadwal', 'jadwal.html', this)"><i class="fas fa-calendar-alt"></i> Jadwal</a>
+                <a class="nav-item" onclick="App.loadModule('raport', 'raport.html', this)"><i class="fas fa-file-pdf"></i> Cetak Raport</a>
+                <a class="nav-item" onclick="App.loadModule('kurikulum', 'kurikulum.html', this)"><i class="fas fa-chart-pie"></i> Monitoring Kurikulum</a>
             </div>
             <div class="user-profile">
                 <div class="user-info" id="sidebarUserName">User Name</div>
@@ -67,113 +59,15 @@
         </nav>
 
         <main class="main-content">
-            <!-- 1. GENERUS MODULE -->
-            <section id="mod-generus">
-                <div class="section-header">
-                    <h2 class="page-title"><i class="fas fa-users text-primary"></i> Data Generus</h2>
+            <div id="app-content-area">
+                <!-- Konten Dimuat Disini -->
+                <div style="text-align:center; margin-top:50px; color:var(--text-muted);">
+                    Selamat Datang. Silakan pilih menu di sebelah kiri.
                 </div>
-                <div class="stat-card" style="margin-bottom:20px;">
-                    <div class="flex gap-4 items-center" style="flex-wrap:wrap;">
-                        <div class="flex items-center gap-2">
-                            <label class="font-bold text-sm">Filter:</label>
-                            <select id="raportFilterJenjang" class="form-control" style="width:auto;" onchange="Raport.populateStudentList()">
-                                <option value="">Semua Jenjang</option>
-                                <option value="PAUD">PAUD</option><option value="Caberawit">Caberawit</option><option value="Pra Remaja">Pra Remaja</option><option value="Remaja">Remaja</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div id="genTableContainer" class="table-card">
-                    <div style="padding:20px; text-align:center;">Modul Generus...</div>
-                </div>
-            </section>
-            
-            <!-- Modul lainnya (Jurnal, Jadwal, Raport) sama seperti file index.html sebelumnya -->
-            <section id="mod-guru" class="hidden"><div class="section-header"><h2>Data Guru</h2></div><p>Modul Guru</p></section>
-
-            <section id="mod-jurnal" class="hidden">
-                <div class="section-header">
-                    <h2 class="page-title"><i class="fas fa-book-open text-primary"></i> Jurnal Pengajian</h2>
-                    <div class="tabs-wrapper">
-                        <button class="tab-btn active" onclick="Jurnal.switchTab('input', this)">Input</button>
-                        <button class="tab-btn" onclick="Jurnal.switchTab('history', this)">Riwayat</button>
-                    </div>
-                </div>
-                <div id="jurnal-input-view">
-                    <div class="stat-card" style="max-width: 600px; margin: 0 auto;">
-                        <input type="hidden" id="jurnTimestamp">
-                        <div class="form-group">
-                            <label>Pilih Jenjang</label>
-                            <select id="jurnJenjang" class="form-control" onchange="Jurnal.loadMembers()">
-                                <option value="">-- Pilih Jenjang --</option>
-                                <option value="PAUD">PAUD</option><option value="Caberawit">Caberawit</option><option value="Pra Remaja">Pra Remaja</option><option value="Remaja">Remaja</option>
-                            </select>
-                        </div>
-                        <div id="jurnalFormArea" class="hidden">
-                            <div class="form-group"><label>Tanggal</label><input type="date" id="jurnDate" class="form-control"></div>
-                            <div class="form-group"><label>Materi Pengajian</label><textarea id="jurnMateri" class="form-control" rows="3"></textarea></div>
-                            <label class="font-bold" style="display:block; margin-bottom:12px;">Daftar Hadir:</label>
-                            <div id="jurnMemberList" style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 16px;"></div>
-                            <div class="flex gap-2">
-                                <button class="btn btn-secondary" onclick="Jurnal.resetForm()">Batal</button>
-                                <button class="btn btn-primary btn-block" onclick="Jurnal.save()">Simpan Jurnal</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="jurnal-history-view" class="hidden"><div id="jurnHistoryContainer"></div></div>
-            </section>
-
-            <section id="mod-jadwal" class="hidden">
-                <div class="section-header">
-                    <h2 class="page-title"><i class="fas fa-calendar-alt text-primary"></i> Jadwal Pengajian</h2>
-                    <button class="btn btn-primary" onclick="Jadwal.openModal()"><i class="fas fa-plus"></i> Tambah Jadwal</button>
-                </div>
-                <div class="table-card"><div id="jadwalListContainer"></div></div>
-            </section>
-
-            <section id="mod-raport" class="hidden">
-                <div class="section-header"><h2 class="page-title"><i class="fas fa-file-pdf text-primary"></i> Cetak Raport</h2></div>
-                <div class="stat-card" style="max-width: 600px; margin: 0 auto;">
-                    <div class="form-group"><label>Pilih Siswa</label><select id="raportStudentSelectFull" class="form-control" onchange="Raport.prepareRaport()"><option value="">-- Pilih Siswa --</option></select></div>
-                    <div id="raportPreviewArea" class="hidden">
-                        <div style="background:var(--bg-body); padding:16px; border-radius:8px; margin-bottom:16px;">
-                            <h4 id="raportNameDisplay" class="font-bold text-primary"></h4>
-                            <p id="raportJenjangDisplay" class="text-sm text-muted"></p>
-                            <div class="flex gap-4 mt-2 text-sm"><div>Kehadiran: <b id="raportAttPercent">0%</b></div><div>Progress: <b id="raportGradeDisplay">-</b></div></div>
-                        </div>
-                        <div class="form-group"><label>Catatan Guru</label><textarea id="raportNote" class="form-control" rows="3"></textarea></div>
-                        <button class="btn btn-primary btn-block" onclick="Raport.downloadPDF()"><i class="fas fa-download"></i> Download PDF</button>
-                    </div>
-                </div>
-            </section>
-            
-            <section id="mod-kurikulum" class="hidden"><div class="section-header"><h2>Monitoring Kurikulum</h2></div><p>Modul Monitoring</p></section>
+            </div>
         </main>
     </div>
 
-    <!-- Modal Jadwal -->
-    <div id="modalJadwal" class="modal">
-        <div class="modal-content">
-            <h3 class="font-bold text-lg mb-4">Form Jadwal</h3>
-            <form onsubmit="event.preventDefault(); Jadwal.save();">
-                <input type="hidden" id="jadwalRowIndex">
-                <div class="flex gap-4">
-                    <div class="form-group" style="flex:1"><label>Hari</label><select id="jadwalHari" class="form-control"><option>Ahad</option><option>Senin</option><option>Selasa</option><option>Rabu</option><option>Kamis</option><option>Jumat</option><option>Sabtu</option></select></div>
-                    <div class="form-group" style="flex:1"><label>Jam</label><input type="time" id="jadwalJam" class="form-control" required></div>
-                </div>
-                <div class="form-group"><label>Jenjang</label><select id="jadwalJenjang" class="form-control"><option>PAUD</option><option>Caberawit</option><option>Pra Remaja</option><option>Remaja</option></select></div>
-                <div class="form-group"><label>Materi / Topik</label><input type="text" id="jadwalMateri" class="form-control" required></div>
-                <div class="form-group"><label>Pengajar</label><input type="text" id="jadwalPengajar" class="form-control"></div>
-                <div class="flex gap-2 mt-4">
-                    <button type="button" class="btn btn-secondary" style="flex:1;" onclick="UI.closeModal('modalJadwal')">Batal</button>
-                    <button type="submit" class="btn btn-primary" style="flex:1;">Simpan</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Link ke JS Eksternal -->
     <script src="script.js"></script>
 </body>
 </html>
