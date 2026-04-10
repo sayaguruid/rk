@@ -2,16 +2,14 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ruang Kurikulum</title>
     
-    <!-- PWA CONFIGURATION -->
+    <!-- PWA Config -->
     <meta name="theme-color" content="#10b981">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="https://placehold.co/192x192/10b981/ffffff?text=RK">
     
-    <!-- Fonts & Libraries (CDN) -->
+    <!-- Libraries (CDN) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
@@ -19,8 +17,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 
-    <!-- Include CSS File -->
-    <?!= include('css'); ?>
+    <!-- Link ke CSS Eksternal -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -69,7 +67,6 @@
         </nav>
 
         <main class="main-content">
-            
             <!-- 1. GENERUS MODULE -->
             <section id="mod-generus">
                 <div class="section-header">
@@ -84,23 +81,16 @@
                                 <option value="PAUD">PAUD</option><option value="Caberawit">Caberawit</option><option value="Pra Remaja">Pra Remaja</option><option value="Remaja">Remaja</option>
                             </select>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <label class="font-bold text-sm">Pilih Siswa:</label>
-                            <select id="raportStudentSelect" class="form-control" style="width:250px;" onchange="Raport.loadStudentData()">
-                                <option value="">-- Pilih Siswa --</option>
-                            </select>
-                        </div>
                     </div>
                 </div>
                 <div id="genTableContainer" class="table-card">
-                    <div style="padding:20px; text-align:center;">Silakan pilih filter untuk melihat data generus.</div>
+                    <div style="padding:20px; text-align:center;">Modul Generus...</div>
                 </div>
             </section>
+            
+            <!-- Modul lainnya (Jurnal, Jadwal, Raport) sama seperti file index.html sebelumnya -->
+            <section id="mod-guru" class="hidden"><div class="section-header"><h2>Data Guru</h2></div><p>Modul Guru</p></section>
 
-            <!-- 2. GURU MODULE (Placeholder) -->
-            <section id="mod-guru" class="hidden"><div class="section-header"><h2>Data Guru</h2></div><p>Modul Guru (Lihat implementasi sebelumnya).</p></section>
-
-            <!-- 3. JURNAL MODULE -->
             <section id="mod-jurnal" class="hidden">
                 <div class="section-header">
                     <h2 class="page-title"><i class="fas fa-book-open text-primary"></i> Jurnal Pengajian</h2>
@@ -109,7 +99,6 @@
                         <button class="tab-btn" onclick="Jurnal.switchTab('history', this)">Riwayat</button>
                     </div>
                 </div>
-
                 <div id="jurnal-input-view">
                     <div class="stat-card" style="max-width: 600px; margin: 0 auto;">
                         <input type="hidden" id="jurnTimestamp">
@@ -132,74 +121,48 @@
                         </div>
                     </div>
                 </div>
-
-                <div id="jurnal-history-view" class="hidden">
-                    <div id="jurnHistoryContainer"></div>
-                </div>
+                <div id="jurnal-history-view" class="hidden"><div id="jurnHistoryContainer"></div></div>
             </section>
 
-            <!-- 4. JADWAL MODULE -->
             <section id="mod-jadwal" class="hidden">
                 <div class="section-header">
                     <h2 class="page-title"><i class="fas fa-calendar-alt text-primary"></i> Jadwal Pengajian</h2>
                     <button class="btn btn-primary" onclick="Jadwal.openModal()"><i class="fas fa-plus"></i> Tambah Jadwal</button>
                 </div>
-                <div class="table-card">
-                    <div id="jadwalListContainer"></div>
-                </div>
+                <div class="table-card"><div id="jadwalListContainer"></div></div>
             </section>
 
-            <!-- 5. RAPORT MODULE -->
             <section id="mod-raport" class="hidden">
-                <div class="section-header">
-                    <h2 class="page-title"><i class="fas fa-file-pdf text-primary"></i> Cetak Raport</h2>
-                </div>
+                <div class="section-header"><h2 class="page-title"><i class="fas fa-file-pdf text-primary"></i> Cetak Raport</h2></div>
                 <div class="stat-card" style="max-width: 600px; margin: 0 auto;">
-                    <div class="form-group">
-                        <label>Pilih Siswa</label>
-                        <select id="raportStudentSelectFull" class="form-control" onchange="Raport.prepareRaport()">
-                            <option value="">-- Pilih Siswa --</option>
-                        </select>
-                    </div>
-                    
+                    <div class="form-group"><label>Pilih Siswa</label><select id="raportStudentSelectFull" class="form-control" onchange="Raport.prepareRaport()"><option value="">-- Pilih Siswa --</option></select></div>
                     <div id="raportPreviewArea" class="hidden">
                         <div style="background:var(--bg-body); padding:16px; border-radius:8px; margin-bottom:16px;">
                             <h4 id="raportNameDisplay" class="font-bold text-primary"></h4>
                             <p id="raportJenjangDisplay" class="text-sm text-muted"></p>
-                            <div class="flex gap-4 mt-2 text-sm">
-                                <div>Kehadiran: <b id="raportAttPercent">0%</b></div>
-                                <div>Progress Kurikulum: <b id="raportGradeDisplay">-</b></div>
-                            </div>
+                            <div class="flex gap-4 mt-2 text-sm"><div>Kehadiran: <b id="raportAttPercent">0%</b></div><div>Progress: <b id="raportGradeDisplay">-</b></div></div>
                         </div>
-                        <div class="form-group">
-                            <label>Catatan Guru</label>
-                            <textarea id="raportNote" class="form-control" rows="3" placeholder="Tuliskan catatan evaluasi..."></textarea>
-                        </div>
+                        <div class="form-group"><label>Catatan Guru</label><textarea id="raportNote" class="form-control" rows="3"></textarea></div>
                         <button class="btn btn-primary btn-block" onclick="Raport.downloadPDF()"><i class="fas fa-download"></i> Download PDF</button>
                     </div>
                 </div>
             </section>
-
-            <!-- 6. KURIKULUM MODULE (Placeholder) -->
-            <section id="mod-kurikulum" class="hidden"><div class="section-header"><h2>Monitoring Kurikulum</h2></div><p>Modul Monitoring.</p></section>
+            
+            <section id="mod-kurikulum" class="hidden"><div class="section-header"><h2>Monitoring Kurikulum</h2></div><p>Modul Monitoring</p></section>
         </main>
     </div>
 
-    <!-- MODAL JADWAL -->
+    <!-- Modal Jadwal -->
     <div id="modalJadwal" class="modal">
         <div class="modal-content">
             <h3 class="font-bold text-lg mb-4">Form Jadwal</h3>
             <form onsubmit="event.preventDefault(); Jadwal.save();">
                 <input type="hidden" id="jadwalRowIndex">
                 <div class="flex gap-4">
-                    <div class="form-group" style="flex:1"><label>Hari</label>
-                        <select id="jadwalHari" class="form-control"><option>Ahad</option><option>Senin</option><option>Selasa</option><option>Rabu</option><option>Kamis</option><option>Jumat</option><option>Sabtu</option></select>
-                    </div>
+                    <div class="form-group" style="flex:1"><label>Hari</label><select id="jadwalHari" class="form-control"><option>Ahad</option><option>Senin</option><option>Selasa</option><option>Rabu</option><option>Kamis</option><option>Jumat</option><option>Sabtu</option></select></div>
                     <div class="form-group" style="flex:1"><label>Jam</label><input type="time" id="jadwalJam" class="form-control" required></div>
                 </div>
-                <div class="form-group"><label>Jenjang</label>
-                    <select id="jadwalJenjang" class="form-control"><option>PAUD</option><option>Caberawit</option><option>Pra Remaja</option><option>Remaja</option></select>
-                </div>
+                <div class="form-group"><label>Jenjang</label><select id="jadwalJenjang" class="form-control"><option>PAUD</option><option>Caberawit</option><option>Pra Remaja</option><option>Remaja</option></select></div>
                 <div class="form-group"><label>Materi / Topik</label><input type="text" id="jadwalMateri" class="form-control" required></div>
                 <div class="form-group"><label>Pengajar</label><input type="text" id="jadwalPengajar" class="form-control"></div>
                 <div class="flex gap-2 mt-4">
@@ -210,7 +173,7 @@
         </div>
     </div>
 
-    <!-- Include JS File -->
-    <?!= include('js'); ?>
+    <!-- Link ke JS Eksternal -->
+    <script src="script.js"></script>
 </body>
 </html>
