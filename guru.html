@@ -1,0 +1,60 @@
+<div class="section-header">
+    <h2 class="page-title"><i class="fas fa-chalkboard-teacher text-primary"></i> Data Guru</h2>
+    <button class="btn btn-primary" onclick="Guru.openModal()"><i class="fas fa-plus"></i> Tambah</button>
+</div>
+
+<div class="filter-bar">
+    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="guruSearch" placeholder="Cari nama guru..." onkeyup="Guru.applyFilters()"></div>
+    <select id="filterGuruStatus" class="form-control" style="width:140px;" onchange="Guru.applyFilters()">
+        <option value="">Semua Status</option>
+        <option value="MT">MT</option>
+        <option value="MS">MS</option>
+        <option value="Guru Bantu">Guru Bantu</option>
+    </select>
+    <select id="filterGuruJK" class="form-control" style="width:120px;" onchange="Guru.applyFilters()">
+        <option value="">Semua JK</option>
+        <option value="L">Laki-laki</option>
+        <option value="P">Perempuan</option>
+    </select>
+</div>
+
+<div class="table-card">
+    <div class="table-responsive">
+        <table id="guruTable">
+            <thead>
+                <tr>
+                    <th width="50">No</th>
+                    <th>Nama Lengkap</th>
+                    <th width="60">L/P</th>
+                    <th width="100">Status</th>
+                    <th>Nomor HP</th>
+                    <th width="100">Mengajar</th>
+                    <th>Lokasi</th>
+                    <th width="100" class="action-col-guru">Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="guruTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MODAL ADD GURU -->
+<div id="modalGuru" class="modal">
+    <div class="modal-content">
+        <h3 class="font-bold text-lg mb-4" style="margin-bottom:20px;">Form Data Guru</h3>
+        <form onsubmit="event.preventDefault(); Guru.saveForm();">
+            <input type="hidden" id="guruRowIndex"><input type="hidden" id="guruNo">
+            <div class="form-group"><label>Nama Lengkap</label><input type="text" id="guruNama" class="form-control" required placeholder="Nama lengkap..."></div>
+            <div class="flex gap-4">
+                <div class="form-group" style="flex:1;"><label>Jenis Kelamin</label><select id="guruJK" class="form-control"><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></div>
+                <div class="form-group" style="flex:1;"><label>Status</label><select id="guruStatus" class="form-control" required><option value="MT">MT</option><option value="MS">MS</option><option value="Guru Bantu">Guru Bantu</option></select></div>
+            </div>
+            <div class="form-group"><label>Nomor HP</label><input type="tel" id="guruHP" class="form-control" placeholder="Contoh: 08123456789"></div>
+            <div class="form-group"><label>Mengajar Generus</label><select id="guruMengajar" class="form-control"><option value="YA">YA</option><option value="TIDAK">TIDAK</option></select></div>
+            <div class="flex gap-2 mt-4" style="margin-top:24px;">
+                <button type="button" class="btn btn-secondary" style="flex:1;" onclick="UI.closeModal('modalGuru')">Batal</button>
+                <button type="submit" class="btn btn-primary" style="flex:1;">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
