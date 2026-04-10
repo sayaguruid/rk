@@ -1,0 +1,58 @@
+<div class="section-header">
+    <h2 class="page-title"><i class="fas fa-chart-pie text-primary"></i> Monitoring Kurikulum</h2>
+    <div class="tabs-wrapper">
+        <div class="tab-btn active" onclick="Kurikulum.switchView('dashboard', this)" id="tabKurDashboard">Rekap Kelompok</div>
+        <div class="tab-btn" onclick="Kurikulum.switchView('detail', this)" id="tabKurDetail">Detail Siswa</div>
+    </div>
+</div>
+    
+<div id="kur-dashboard-view">
+    <div class="filter-bar" style="display:inline-flex; width:100%; max-width:400px;">
+        <label class="font-medium" style="margin-right:10px;">Filter Jenjang:</label>
+        <select id="kurDashboardFilterJenjang" class="form-control" onchange="Kurikulum.loadDashboard()">
+            <option value="">Semua Jenjang</option>
+        </select>
+    </div>
+    <div id="kurDashboardContent" style="margin-top:24px;"></div>
+</div>
+
+<div id="kur-detail-view" class="hidden">
+    <div class="stat-card" style="margin-bottom:24px;">
+        <div class="flex gap-4 items-center" style="flex-wrap:wrap;">
+            <div class="flex items-center gap-2">
+                <label class="font-bold text-sm">Filter Jenjang:</label>
+                <select id="kurFilterJenjang" class="form-control" style="width:auto;" onchange="Kurikulum.populateStudentList()">
+                    <option value="">Semua Jenjang</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-2" style="margin-left: 20px;">
+                <label class="font-bold text-sm">Pilih Siswa:</label>
+                <select id="kurStudentSelect" class="form-control" style="width:300px;" onchange="Kurikulum.loadStudentDetail()">
+                    <option value="">-- Pilih Siswa --</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div id="kurContent" class="hidden">
+        <div style="background:var(--bg-surface); padding:20px; border-radius:12px; margin-bottom:24px; border:1px solid var(--border); box-shadow:var(--shadow-sm);">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h4 class="text-primary font-bold" style="margin-bottom:4px;"><span id="kurStudentNameDisplay">-</span></h4>
+                    <span class="text-xs text-muted font-medium bg-gray-100 px-2 py-1 rounded">Jenjang: <span id="kurJenjangDisplay">-</span></span>
+                </div>
+                <div class="text-right">
+                    <div class="text-xs text-muted font-bold uppercase tracking-wide">Pencapaian</div>
+                    <div class="text-3xl font-bold text-primary" id="kurPercent">0%</div>
+                </div>
+            </div>
+            <div style="background:#e2e8f0; height:10px; border-radius:5px; overflow:hidden; margin-top:16px;">
+                <div id="kurBar" style="width:0%; background:var(--primary); height:100%; transition:width 0.6s ease;"></div>
+            </div>
+        </div>
+        <div id="kurChecklistArea"></div>
+        <div style="margin-top:24px;">
+            <button class="btn btn-primary btn-block" onclick="Kurikulum.save()"><i class="fas fa-save"></i> Simpan Progress Siswa</button>
+        </div>
+    </div>
+</div>
