@@ -1,0 +1,55 @@
+<div class="section-header">
+    <h2 class="page-title"><i class="fas fa-users text-primary"></i> Data Generus</h2>
+    <button class="btn btn-primary" onclick="Generus.openModal()"><i class="fas fa-plus"></i> Tambah</button>
+</div>
+
+<div class="filter-bar">
+    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="genSearch" placeholder="Cari nama..." onkeyup="Generus.applyFilters()"></div>
+    <select id="filterJenjang" class="form-control" style="width:140px;" onchange="Generus.applyFilters()"><option value="">Semua Jenjang</option><option value="PAUD">PAUD</option><option value="Caberawit">Caberawit</option><option value="Pra Remaja">Pra Remaja</option><option value="Remaja">Remaja</option></select>
+    <select id="filterJK" class="form-control" style="width:120px;" onchange="Generus.applyFilters()"><option value="">Semua JK</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select>
+</div>
+
+<div class="table-card">
+    <div class="table-responsive">
+        <table id="genTable">
+            <thead>
+                <tr>
+                    <th width="50">No</th>
+                    <th>Nama Lengkap</th>
+                    <th width="60">L/P</th>
+                    <th width="60">Umur</th>
+                    <th>Kelas</th>
+                    <th>Jenjang</th>
+                    <th>Lokasi</th>
+                    <th width="100" class="action-col">Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="genTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MODAL ADD GENERUS -->
+<div id="modalGen" class="modal">
+    <div class="modal-content">
+        <h3 class="font-bold text-lg mb-4" style="margin-bottom:20px;">Form Data Generus</h3>
+        <form onsubmit="event.preventDefault(); Generus.saveForm();">
+            <input type="hidden" id="genRowIndex"><input type="hidden" id="genNo">
+            <div class="form-group"><label>Nama Lengkap</label><input type="text" id="genNama" class="form-control" required placeholder="Nama lengkap..."></div>
+            <div class="flex gap-4">
+                <div class="form-group" style="flex:1;"><label>Jenis Kelamin</label><select id="genJK" class="form-control"><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></div>
+                <div class="form-group" style="flex:1;"><label>Kelas</label><select id="genKelas" class="form-control" required><option value="Belum Sekolah">Belum Sekolah</option><option value="PAUD">PAUD</option><option value="TK">TK</option><option value="1">Kelas 1</option><option value="2">Kelas 2</option><option value="3">Kelas 3</option><option value="4">Kelas 4</option><option value="5">Kelas 5</option><option value="6">Kelas 6</option><option value="7">Kelas 7</option><option value="8">Kelas 8</option><option value="9">Kelas 9</option><option value="10">Kelas 10</option><option value="11">Kelas 11</option><option value="12">Kelas 12</option><option value="Mahasiswa">Mahasiswa</option><option value="S1">S1</option><option value="S2">S2</option></select></div>
+            </div>
+            <div class="flex gap-4">
+                <div class="form-group" style="flex:1;"><label>Tempat Lahir</label><input type="text" id="genTmpLahir" class="form-control"></div>
+                <div class="form-group" style="flex:1;"><label>Tanggal Lahir</label><input type="date" id="genTglLahir" class="form-control"></div>
+            </div>
+            <div class="form-group"><label>Nama Ayah</label><input type="text" id="genAyah" class="form-control"></div>
+            <div class="form-group"><label>Nama Ibu</label><input type="text" id="genIbu" class="form-control"></div>
+            <div class="flex gap-2 mt-4" style="margin-top:24px;">
+                <button type="button" class="btn btn-secondary" style="flex:1;" onclick="UI.closeModal('modalGen')">Batal</button>
+                <button type="submit" class="btn btn-primary" style="flex:1;">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
