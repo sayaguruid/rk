@@ -2,7 +2,7 @@
 // CONFIG & GLOBALS
 // ==========================================
 // GANTI URL INI DENGAN URL DEPLOYMENT WEB APP GOOGLE APPS SCRIPT ANDA
-const API_URL = "https://script.google.com/macros/s/AKfycb...GANTI_DENGAN_URL_PANJANG_ANDA.../exec"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbzmqW0ItKt7UGs4u3dgbCDPsL1iEgqd9xYO1UmcO-XfNExbykToNlc827mpTU-65fEK/exec"; 
 
 let currentUser = null;
 
