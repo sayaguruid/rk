@@ -1,0 +1,315 @@
+// ==========================================
+// CONFIG & GLOBALS
+// ==========================================
+// GANTI URL INI DENGAN URL DEPLOYMENT WEB APP GOOGLE APPS SCRIPT ANDA
+const API_URL = "https://script.google.com/macros/s/AKfycb...GANTI_DENGAN_URL_PANJANG_ANDA.../exec"; 
+
+let currentUser = null;
+
+// ==========================================
+// UI HELPERS
+// ==========================================
+const UI = {
+    loader: (show) => { const el = document.getElementById('globalLoader'); if(show) el.classList.remove('hidden'); else el.classList.add('hidden'); },
+    toast: (msg, type = 'success') => {
+        const container = document.getElementById('toast-container');
+        const div = document.createElement('div'); div.className = `toast ${type}`;
+        div.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> <span>${msg}</span>`;
+        container.appendChild(div); setTimeout(() => { div.style.opacity='0'; setTimeout(()=>div.remove(), 300); }, 3000);
+    },
+    closeModal: (id) => { const el = document.getElementById(id); el.classList.remove('show'); setTimeout(() => el.style.display = 'none', 300); },
+    openModal: (id) => { const el = document.getElementById(id); el.style.display = 'flex'; void el.offsetWidth; el.classList.add('show'); }
+};
+
+// ==========================================
+// AUTH
+// ==========================================
+const Auth = {
+    init: function() {
+        const savedUser = localStorage.getItem('sso_user');
+        if (savedUser) { currentUser = JSON.parse(savedUser); Auth.showApp(); } 
+        else { document.getElementById('login-view').style.display = 'flex'; }
+    },
+    login: async function() {
+        const u = document.getElementById('u').value, p = document.getElementById('p').value;
+        const btn = document.getElementById('btnLogin'), msg = document.getElementById('loginMsg');
+        btn.disabled = true; btn.innerHTML = '<div class="spinner" style="width:16px; height:16px;"></div>';
+        msg.style.display = 'none';
+        try {
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', username: u, password: p }) });
+            const data = await res.json();
+            if (data.success) {
+                currentUser = { role: data.role, lokasi: data.lokasi, desa: data.desa };
+                localStorage.setItem('sso_user', JSON.stringify(currentUser));
+                document.getElementById('login-view').classList.add('fade-out');
+                setTimeout(() => Auth.showApp(), 500);
+            } else { throw new Error("Username/Password salah"); }
+        } catch (err) {
+            msg.innerText = err.message; msg.style.display = 'block';
+            btn.disabled = false; btn.innerHTML = 'Masuk';
+        }
+    },
+    logout: function() { localStorage.removeItem('sso_user'); location.reload(); },
+    showApp: function() {
+        document.getElementById('login-view').style.display = 'none'; document.getElementById('app-layout').classList.remove('hidden');
+        document.getElementById('sidebarUserName').innerText = currentUser.username || "User";
+        document.getElementById('sidebarUserRole').innerText = `${currentUser.role}`;
+        App.switchModule('jurnal', document.querySelector('.nav-item'));
+    }
+};
+
+// ==========================================
+// APP CONTROLLER
+// ==========================================
+const App = {
+    switchModule: function(modName, navEl) {
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); if(navEl) navEl.classList.add('active');
+        document.querySelectorAll('main > section').forEach(el => el.classList.add('hidden'));
+        document.getElementById(`mod-${modName}`).classList.remove('hidden');
+        if(window.innerWidth < 768) document.getElementById('sidebar').classList.remove('open');
+        
+        if(modName === 'jadwal') Jadwal.init();
+        if(modName === 'raport') Raport.init();
+        if(modName === 'jurnal') Jurnal.init();
+    }
+};
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+// ==========================================
+// MODULE: JURNAL
+// ==========================================
+const Jurnal = {
+    members: [], isEditing: false,
+    init: function() { document.getElementById('jurnDate').valueAsDate = new Date(); this.switchTab('input', document.querySelector('.tab-btn.active')); },
+    switchTab: function(tab, el) {
+        document.querySelectorAll('#mod-jurnal .tab-btn').forEach(t => t.classList.remove('active')); if(el) el.classList.add('active');
+        document.getElementById('jurnal-input-view').classList.toggle('hidden', tab !== 'input');
+        document.getElementById('jurnal-history-view').classList.toggle('hidden', tab !== 'history');
+        if(tab === 'history') this.loadHistory();
+    },
+    loadMembers: async function() {
+        const jenjang = document.getElementById('jurnJenjang').value;
+        const container = document.getElementById('jurnMemberList'), formArea = document.getElementById('jurnalFormArea');
+        if(!jenjang) { formArea.classList.add('hidden'); return; } formArea.classList.remove('hidden');
+        container.innerHTML = '<div class="text-center"><div class="spinner"></div></div>';
+        try {
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getMemberList', role: currentUser.role, lokasi: currentUser.lokasi, jenjang }) });
+            const json = await res.json(); container.innerHTML = ''; this.members = json.members || [];
+            this.members.forEach(m => {
+                const div = document.createElement('div'); 
+                div.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:10px; margin-bottom:8px; background:white; border:1px solid var(--border); border-radius:8px;";
+                div.innerHTML = `<span class="font-medium">${m.nama}</span><select id="status_${m.no}" class="form-control" style="width:120px; padding:4px;"><option value="Hadir">Hadir</option><option value="Sakit">Sakit</option><option value="Izin">Izin</option><option value="Alpha">Alpha</option></select>`;
+                container.appendChild(div);
+            });
+        } catch(e) { UI.toast('Gagal muat data', 'error'); }
+    },
+    save: async function() {
+        const jenjang = document.getElementById('jurnJenjang').value, tgl = document.getElementById('jurnDate').value, materi = document.getElementById('jurnMateri').value;
+        if(!jenjang || !tgl || !materi) return UI.toast('Lengkapi data', 'error');
+        const hadirData = []; this.members.forEach(m => hadirData.push({ nama: m.nama, status: document.getElementById(`status_${m.no}`).value }));
+        UI.loader(true);
+        const timestamp = document.getElementById('jurnTimestamp').value;
+        const action = timestamp ? 'editJurnal' : 'addJurnal';
+        const payload = { timestamp, tanggal: tgl, kelompok: currentUser.lokasi, desa: currentUser.desa, jenjang, materi, hadir: hadirData };
+        try {
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action, payload }) });
+            if((await res.json()).status === 'success') { UI.toast('Jurnal tersimpan'); this.resetForm(); this.switchTab('history', document.querySelectorAll('.tab-btn')[1]); }
+        } catch(e) { UI.toast('Gagal simpan', 'error'); } finally { UI.loader(false); }
+    },
+    loadHistory: async function() {
+        UI.loader(true);
+        const container = document.getElementById('jurnHistoryContainer');
+        container.innerHTML = '<div class="text-center p-4"><div class="spinner"></div></div>';
+        try {
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getJurnalHistory', role: currentUser.role, lokasi: currentUser.lokasi, desa: currentUser.desa }) });
+            const json = await res.json(); const history = json.history || [];
+            container.innerHTML = '';
+            history.forEach(h => {
+                let hCount=0, sCount=0, iCount=0, aCount=0;
+                try { const list = JSON.parse(h.kehadiran); list.forEach(x => { if(x.status==='Hadir')hCount++; else if(x.status==='Sakit')sCount++; else if(x.status==='Izin')iCount++; else aCount++; }); }catch(e){}
+                const div = document.createElement('div'); div.className = 'history-card';
+                div.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div><div class="font-bold text-primary">${h.tanggal}</div><div class="text-xs text-muted">${h.jenjang}</div></div>
+                        <div class="flex gap-2 text-xs font-bold">
+                            <span class="badge-H status-badge">H:${hCount}</span><span class="badge-S status-badge">S:${sCount}</span>
+                            <span class="badge-I status-badge">I:${iCount}</span><span class="badge-A status-badge">A:${aCount}</span>
+                        </div>
+                    </div>
+                    <div class="text-sm text-muted mt-2 italic">"${h.materi}"</div>
+                    <div class="mt-3 flex gap-2 justify-end">
+                        <button class="btn btn-sm btn-secondary" onclick="Jurnal.edit('${h.timestamp}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="Jurnal.delete('${h.timestamp}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        } catch(e) { UI.toast('Gagal muat riwayat', 'error'); } finally { UI.loader(false); }
+    },
+    edit: async function(ts) {
+        UI.loader(true);
+        try {
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getJurnalHistory', role: currentUser.role, lokasi: currentUser.lokasi }) });
+            const json = await res.json();
+            const item = json.history.find(h => String(h.timestamp) === String(ts));
+            if(item) {
+                document.getElementById('jurnTimestamp').value = item.timestamp;
+                document.getElementById('jurnJenjang').value = item.jenjang;
+                document.getElementById('jurnDate').value = item.tanggal.split('/').reverse().join('-');
+                document.getElementById('jurnMateri').value = item.materi;
+                await this.loadMembers(); 
+                const attendance = JSON.parse(item.kehadiran);
+                attendance.forEach(att => {
+                    this.members.forEach(m => {
+                        if(m.nama === att.nama) document.getElementById(`status_${m.no}`).value = att.status;
+                    });
+                });
+                this.switchTab('input', document.querySelectorAll('.tab-btn')[0]);
+            }
+        } catch(e) { UI.toast('Gagal memuat data edit', 'error'); } finally { UI.loader(false); }
+    },
+    delete: async function(ts) {
+        if(!confirm('Hapus jurnal ini?')) return;
+        UI.loader(true);
+        try {
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteJurnal', timestamp: ts }) });
+            UI.toast('Terhapus'); this.loadHistory();
+        } finally { UI.loader(false); }
+    },
+    resetForm: function() {
+        document.getElementById('jurnTimestamp').value = '';
+        document.getElementById('jurnMateri').value = '';
+        document.getElementById('jurnJenjang').value = '';
+        document.getElementById('jurnalFormArea').classList.add('hidden');
+    }
+};
+
+// ==========================================
+// MODULE: JADWAL
+// ==========================================
+const Jadwal = {
+    init: async function() {
+        UI.loader(true);
+        try {
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getJadwal', role: currentUser.role, lokasi: currentUser.lokasi }) });
+            const json = await res.json();
+            this.renderList(json.data || []);
+        } catch(e) { UI.toast('Gagal muat jadwal', 'error'); } finally { UI.loader(false); }
+    },
+    renderList: function(data) {
+        const container = document.getElementById('jadwalListContainer');
+        container.innerHTML = '';
+        if(data.length === 0) { container.innerHTML = '<div class="p-4 text-center text-muted">Belum ada jadwal.</div>'; return; }
+        const days = ['Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        data.sort((a,b) => days.indexOf(a.hari) - days.indexOf(b.hari));
+        data.forEach(d => {
+            const div = document.createElement('div'); div.className = 'jadwal-item';
+            div.innerHTML = `
+                <div class="jadwal-time">${d.hari}, ${d.jam}</div>
+                <div class="jadwal-info">
+                    <div class="font-bold text-main">${d.materi}</div>
+                    <div class="text-xs text-muted">${d.jenjang} - Pengajar: ${d.pengajar || '-'}</div>
+                </div>
+                <button class="btn btn-sm btn-danger" onclick="Jadwal.delete(${d.rowIndex})"><i class="fas fa-trash"></i></button>
+            `;
+            container.appendChild(div);
+        });
+    },
+    openModal: function() { document.querySelector('#modalJadwal form').reset(); UI.openModal('modalJadwal'); },
+    save: async function() {
+        const payload = {
+            rowIndex: document.getElementById('jadwalRowIndex').value,
+            hari: document.getElementById('jadwalHari').value,
+            jam: document.getElementById('jadwalJam').value,
+            jenjang: document.getElementById('jadwalJenjang').value,
+            materi: document.getElementById('jadwalMateri').value,
+            pengajar: document.getElementById('jadwalPengajar').value,
+            kelompok: currentUser.lokasi,
+            desa: currentUser.desa
+        };
+        UI.loader(true);
+        try {
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'saveJadwal', payload }) });
+            if((await res.json()).status === 'success') { UI.toast('Jadwal disimpan'); UI.closeModal('modalJadwal'); this.init(); }
+        } catch(e) { UI.toast('Gagal simpan', 'error'); } finally { UI.loader(false); }
+    },
+    delete: async function(idx) { if(!confirm('Hapus jadwal?')) return; UI.loader(true); try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteJadwal', rowIndex: idx }) }); this.init(); } finally { UI.loader(false); } }
+};
+
+// ==========================================
+// MODULE: RAPORT
+// ==========================================
+const Raport = {
+    allStudents: [], studentData: null,
+    init: async function() {
+        try {
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getData', role: currentUser.role, lokasi: currentUser.lokasi }) });
+            const json = await res.json(); this.allStudents = json.data || [];
+            this.populateDropdown();
+        } catch(e) { console.error(e); }
+    },
+    populateDropdown: function() {
+        const sel = document.getElementById('raportStudentSelectFull');
+        sel.innerHTML = '<option value="">-- Pilih Siswa --</option>';
+        this.allStudents.forEach(s => {
+            sel.innerHTML += `<option value="${s.nama}" data-jenjang="${s.jenjang}">${s.nama} (${s.jenjang})</option>`;
+        });
+    },
+    prepareRaport: async function() {
+        const sel = document.getElementById('raportStudentSelectFull');
+        const nama = sel.value; if(!nama) return;
+        const jenjang = sel.options[sel.selectedIndex].getAttribute('data-jenjang');
+        document.getElementById('raportNameDisplay').innerText = nama;
+        document.getElementById('raportJenjangDisplay').innerText = jenjang;
+        UI.loader(true);
+        try {
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getRapotData', nama, jenjang }) });
+            const json = await res.json();
+            this.studentData = json;
+            const progress = json.progress || {};
+            const keys = Object.keys(progress);
+            const total = keys.length;
+            const completed = keys.filter(k => progress[k]).length;
+            const pct = total > 0 ? Math.round((completed/total)*100) : 0;
+            let grade = 'E';
+            if(pct >= 90) grade = 'A'; else if(pct >= 80) grade = 'B'; else if(pct >= 70) grade = 'C'; else if(pct >= 60) grade = 'D';
+            const att = json.attendance;
+            const attPct = att.total > 0 ? Math.round((att.hadir/att.total)*100) : 0;
+            document.getElementById('raportGradeDisplay').innerText = `${grade} (${pct}%)`;
+            document.getElementById('raportAttPercent').innerText = `${attPct}% (${att.hadir}/${att.total})`;
+            document.getElementById('raportPreviewArea').classList.remove('hidden');
+        } catch(e) { UI.toast('Gagal memuat data raport', 'error'); } finally { UI.loader(false); }
+    },
+    downloadPDF: function() {
+        if(!this.studentData) return;
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const nama = document.getElementById('raportNameDisplay').innerText;
+        const jenjang = document.getElementById('raportJenjangDisplay').innerText;
+        const note = document.getElementById('raportNote').value;
+        doc.setFontSize(16); doc.setFont("helvetica", "bold"); doc.text("LAPORAN HASIL BELAJAR", 14, 20);
+        doc.setFontSize(11); doc.setFont("helvetica", "normal");
+        doc.text(`Nama: ${nama}`, 14, 30);
+        doc.text(`Jenjang: ${jenjang}`, 14, 36);
+        doc.text(`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`, 14, 42);
+        const att = this.studentData.attendance;
+        const grade = document.getElementById('raportGradeDisplay').innerText;
+        const tableHeaders = [["Keterangan", "Detail"]];
+        const tableBody = [
+            ["Nilai Kurikulum", grade],
+            ["Total Kehadiran", `${att.total} Sesi`],
+            ["Hadir", `${att.hadir} Sesi`],
+            ["Sakit", `${att.sakit} Sesi`],
+            ["Izin", `${att.izin} Sesi`],
+            ["Alpha", `${att.alpha} Sesi`],
+        ];
+        doc.autoTable({ startY: 50, head: tableHeaders, body: tableBody, theme: 'grid', headStyles: { fillColor: [16, 185, 129] } });
+        const finalY = doc.lastAutoTable.finalY + 10;
+        doc.text("Catatan Guru:", 14, finalY);
+        doc.text(note, 14, finalY + 6, { maxWidth: 180 });
+        doc.save(`Raport_${nama.replace(/\s/g,'_')}.pdf`);
+    },
+    populateStudentList: function() { }
+};
+
+window.onload = function() { Auth.init(); };
