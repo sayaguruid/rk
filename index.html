@@ -618,20 +618,27 @@
                     </div>
                 </div>
             </section>
-
-            <!-- MODULE 5: CETAK RAPOT (REVISED - NO PREVIEW) -->
+        <!-- MODULE 5: CETAK RAPOT & LEGER -->
+            <!-- MODULE 5: CETAK RAPOT & LEGER -->
             <section id="mod-rapot" class="hidden">
                 <div class="section-header">
-                    <h2 class="page-title"><i class="fas fa-print text-primary"></i> Cetak Rapot</h2>
-                    <!-- Tombol Cetak PDF, awalnya hidden -->
-                    <button class="btn btn-danger hidden" id="btnPrintRapot" onclick="Rapot.printPDF()">
-                        <i class="fas fa-file-pdf"></i> Cetak PDF Sekarang
-                    </button>
+                    <h2 class="page-title"><i class="fas fa-print text-primary"></i> Rapot & Leger</h2>
                 </div>
 
-                <!-- FORM INPUT (Selalu Muncul untuk Kelompok) -->
+                <!-- TABS -->
+                <div class="tabs-wrapper" style="margin-bottom:24px;">
+                    <button class="tab-btn active" onclick="Rapot.switchTab('input', this)" id="tabRapotInput">Input Rapot</button>
+                    <!-- Tombol Leger hanya muncul untuk Daerah/Desa -->
+                    <button class="tab-btn hidden" onclick="Rapot.switchTab('leger', this)" id="tabRapotLeger">Unduh Leger</button>
+                </div>
+
+                <!-- VIEW 1: INPUT RAPOT (KHUSUS KELOMPOK) -->
                 <div id="rapot-input-view">
-                    <div class="stat-card" style="margin-bottom: 24px;">
+                    <div id="rapot-kelompok-only-msg" class="text-center p-4 bg-yellow-50 text-yellow-700 rounded hidden" style="margin-bottom:20px;">
+                        Fitur Input Rapot hanya tersedia untuk akun Kelompok.
+                    </div>
+
+                    <div class="stat-card" style="margin-bottom: 24px;" id="rapot-form-area">
                         <div class="form-group">
                             <label>Pilih Siswa</label>
                             <select id="rapotStudentSelect" class="form-control" onchange="Rapot.loadStudentData()">
@@ -644,7 +651,6 @@
                         </div>
                     </div>
 
-                    <!-- Form Nilai (Muncul setelah pilih siswa) -->
                     <div id="rapotFormContainer" class="hidden" style="background: white; padding: 24px; border-radius: 12px; border: 1px solid var(--border);">
                         <h4 style="margin-bottom:16px; color:var(--primary);">Input Penilaian</h4>
                         <div id="rapotGradeRows"></div>
@@ -654,11 +660,71 @@
                         </div>
                         <div class="flex gap-2" style="margin-top:20px;">
                             <button class="btn btn-primary" onclick="Rapot.save()"><i class="fas fa-save"></i> Simpan Nilai</button>
+                            <button class="btn btn-danger hidden" id="btnPrintRapot" onclick="Rapot.printPDF()"><i class="fas fa-file-pdf"></i> Cetak PDF</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 2: LEGER (KHUSUS DAERAH & DESA) -->
+                <div id="rapot-leger-view" class="hidden">
+                    <!-- Filters -->
+                    <!-- Filters -->
+                    <div class="filter-bar">
+                        <div class="form-group" style="margin-bottom:0; flex:1;">
+                            <label>Semester</label>
+                            <select id="legerSemester" class="form-control">
+                                <option value="">Semua Semester</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0; width:200px;" id="wrapFilterDesa">
+                            <label>Filter Desa</label>
+                            <select id="legerFilterDesa" class="form-control">
+                                <option value="">Semua Desa</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0; width:200px;">
+                            <label>Filter Kelompok</label>
+                            <select id="legerFilterKelompok" class="form-control">
+                                <option value="">Semua Kelompok</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0; width:150px; display:flex; align-items:flex-end;">
+                            <button class="btn btn-primary btn-block" onclick="Leger.loadData()"><i class="fas fa-search"></i> Tampilkan</button>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0; width:180px; display:flex; align-items:flex-end;">
+                            <button class="btn btn-success btn-block" onclick="Leger.downloadExcel()"><i class="fas fa-file-excel"></i> Unduh Excel</button>
+                        </div>
+                    </div>
+
+                    <!-- Stats: Predikat Rata-rata -->
+                    <div id="legerStatsArea" class="hidden" style="margin-bottom:24px;">
+                        <h4 style="margin-bottom:16px; color:var(--primary);">Rekap Predikat Rata-rata</h4>
+                        <div class="stat-cards-grid" id="legerStatsGrid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+                            <!-- Cards will be injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Table Preview -->
+                    <div class="table-card">
+                        <div class="table-responsive">
+                            <table id="legerTable">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Nama</th>
+                                        <th>Kelompok</th>
+                                        <th>Desa</th>
+                                        <th>Semester</th>
+                                        <th>Rata-rata</th>
+                                        <th>Predikat</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="legerTableBody"></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </section>
-
             <!-- MODULE 6: JADWAL KBM (UPDATED) -->
             <section id="mod-jadwal" class="hidden">
                 <div class="section-header">
@@ -1112,10 +1178,7 @@
         };
 
         // ==========================================
-        // MODULE RAPOT (UPDATED LOGIC)
-        // ==========================================
-        // ==========================================
-        // MODULE RAPOT (REVISI - LANGSUNG CETAK)
+        // MODULE RAPOT (REVISI - FIX DATA LOADING)
         // ==========================================
         const Rapot = {
             grades: ["A", "A-", "B+", "B", "B-", "C", "D", "E"],
@@ -1123,12 +1186,24 @@
             currentCurriculum: null,
 
             init: async function() {
-                // Sembunyikan tombol cetak saat pertama buka
-                document.getElementById('btnPrintRapot').classList.add('hidden');
-                document.getElementById('rapotFormContainer').classList.add('hidden');
+                const btnPrint = document.getElementById('btnPrintRapot');
+                const tabLeger = document.getElementById('tabRapotLeger');
+                const formArea = document.getElementById('rapot-form-area');
+                const msgOnly = document.getElementById('rapot-kelompok-only-msg');
 
-                // Load Siswa
+                // Reset View
+                btnPrint.classList.add('hidden');
+                document.getElementById('rapotFormContainer').classList.add('hidden');
+                document.getElementById('rapot-leger-view').classList.add('hidden');
+                document.getElementById('rapot-input-view').classList.remove('hidden');
+
+                // Logic Tampilan berdasarkan Role
                 if (currentUser.role === 'kelompok') {
+                    tabLeger.classList.add('hidden');
+                    formArea.classList.remove('hidden');
+                    msgOnly.classList.add('hidden');
+                    
+                    // Load Siswa Dropdown
                     const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getData', role: currentUser.role, lokasi: currentUser.lokasi }) });
                     const json = await res.json();
                     const sel = document.getElementById('rapotStudentSelect');
@@ -1136,47 +1211,71 @@
                     (json.data || []).forEach(s => {
                         sel.innerHTML += `<option value="${s.nama}">${s.nama} - ${s.jenjang}</option>`;
                     });
+                } else if (currentUser.role === 'daerah' || currentUser.role === 'desa') {
+                    // Tampilkan Tab Leger, Sembunyikan Input Rapot
+                    tabLeger.classList.remove('hidden');
+                    formArea.classList.add('hidden');
+                    msgOnly.classList.remove('hidden');
+                    
+                    // FIX: PASTIKAN DATA GENERUS TERLOAD UNTUK FILTER DESA
+                    // Jika data belum ada (misal user langsung buka menu ini), fetch dulu.
+                    if(Generus.allData.length === 0) {
+                        try {
+                            const gRes = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getData', role: currentUser.role, lokasi: currentUser.lokasi }) });
+                            const gJson = await gRes.json();
+                            Generus.allData = gJson.data || [];
+                        } catch(e) { console.error("Gagal load data generus untuk filter", e); }
+                    }
+                    
+                    // Setup Filter Leger (Load Desa List untuk Daerah)
+                    if(currentUser.role === 'daerah') {
+                        Leger.populateDesaFilter();
+                    } else {
+                        document.getElementById('wrapFilterDesa').classList.add('hidden'); // Sembunyikan filter desa jika akun desa
+                    }
+                }
+            },
+
+            switchTab: function(tab, btn) {
+                document.querySelectorAll('#mod-rapot .tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                if(tab === 'input') {
+                    document.getElementById('rapot-input-view').classList.remove('hidden');
+                    document.getElementById('rapot-leger-view').classList.add('hidden');
                 } else {
-                    // Untuk Desa/Daerah, jika ingin fitur cetak juga, logika bisa ditambahkan di sini
-                    document.querySelector('#mod-rapot').innerHTML = '<div class="text-center p-4">Fitur cetak rapot hanya untuk akun Kelompok.</div>';
+                    document.getElementById('rapot-input-view').classList.add('hidden');
+                    document.getElementById('rapot-leger-view').classList.remove('hidden');
+                    // Auto load data awal jika perlu, atau biarkan user filter dulu
                 }
             },
 
             loadStudentData: async function() {
                 const nama = document.getElementById('rapotStudentSelect').value;
                 if(!nama) return;
-
                 document.getElementById('rapotFormContainer').classList.add('hidden');
-                document.getElementById('btnPrintRapot').classList.add('hidden'); // Sembunyikan tombol cetak saat ganti siswa
+                document.getElementById('btnPrintRapot').classList.add('hidden');
                 UI.loader(true);
 
                 try {
                     const student = Generus.allData.find(s => s.nama === nama);
                     if(!student) throw new Error("Data siswa tidak ditemukan");
 
-                    // Ambil Kurikulum untuk daftar materi
                     const cRes = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getConfig' }) });
                     const cJson = await cRes.json();
-                    if(cJson.status === 'success') {
-                        this.currentCurriculum = cJson.data[student.jenjang] || [];
-                    }
+                    if(cJson.status === 'success') this.currentCurriculum = cJson.data[student.jenjang] || [];
 
-                    // Ambil Data Nilai yang Tersimpan
                     const semester = document.getElementById('rapotSemester').value;
                     const rRes = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getRapot', nama, semester }) });
                     const rJson = await rRes.json();
-                    let savedGrades = {};
-                    let savedNotes = "";
+                    let savedGrades = {}, savedNotes = "";
                     if(rJson.status === 'success' && rJson.data) {
                         savedGrades = rJson.data.nilai || {};
                         savedNotes = rJson.data.catatan || "";
                     }
 
-                    // Bangun Form Input
                     const titles = [];
-                    (this.currentCurriculum || []).forEach(c => {
-                        if(titles.indexOf(c.title) === -1) titles.push(c.title);
-                    });
+                    (this.currentCurriculum || []).forEach(c => { if(titles.indexOf(c.title) === -1) titles.push(c.title); });
 
                     const container = document.getElementById('rapotGradeRows');
                     container.innerHTML = '';
@@ -1220,7 +1319,6 @@
                     const result = await res.json();
                     if(result.status === 'success') {
                         UI.toast('Nilai Berhasil Disimpan');
-                        // Tampilkan tombol Cetak PDF setelah simpan sukses
                         document.getElementById('btnPrintRapot').classList.remove('hidden');
                     }
                 } catch(e) { UI.toast('Gagal simpan', 'error'); }
@@ -1231,14 +1329,14 @@
                 const nama = document.getElementById('rapotStudentSelect').value;
                 const semester = document.getElementById('rapotSemester').value;
                 
-                if(!nama) return;
-
+                if(!nama) return UI.toast('Pilih siswa dulu', 'error');
+                
                 UI.loader(true);
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
                 
                 try {
-                    // 1. Ambil Data Terbaru dari Server ( agar akurat )
+                    // 1. Ambil Data Terbaru dari Server (agar akurat)
                     const rRes = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getRapot', nama, semester }) });
                     const rJson = await rRes.json();
                     
@@ -1296,7 +1394,7 @@
                         tableBody.push([index + 1, tit, grade]); // Format: No, Materi, Nilai
                     });
 
-                    const avgScore = titles.length > 0 ? (totalScore / titles.length).toFixed(2) : 0;
+                    const avgScore = titles.length > 0 ? (totalScore / titles.length) : 0;
                     const finalGrade = this.scoreToLetter(avgScore);
 
                     doc.autoTable({
@@ -1362,9 +1460,9 @@
                     doc.line(30, sigY + 15, 80, sigY + 15); // Garis tanda tangan
 
                     const today = new Date();
-                    const dateStr = `${today.getDate()}/${today.getMonth()+1}/${today.getFullYear()}`;
-                    doc.text(`${dateStr}, ${currentUser.lokasi}`, 130, sigY);
-                    doc.text("Pengajar Kelompok", 130, sigY + 5);
+                    const dateStr = `${currentUser.lokasi}, ${today.getDate()}/${today.getMonth()+1}/${today.getFullYear()}`;
+                    doc.text(`${dateStr}`, 130, sigY);
+                    doc.text("Guru", 130, sigY + 5);
                     doc.line(130, sigY + 15, 180, sigY + 15);
 
                     // --- HALAMAN 2: KURIKULUM (Jika ingin tetap ada) ---
@@ -1382,8 +1480,13 @@
                         const pData = pJson.data.progressData;
                         const kurBody = [];
                         let no = 1;
+                        
+                        // Loop kurikulum yang ada di currentCurriculum
                         (this.currentCurriculum || []).forEach((cat, cIdx) => {
-                            kurBody.push([{ content: cat.title, colSpan: 3, styles: { fillColor: [200, 200, 200], fontStyle: 'bold' } }]); // Header Kategori
+                            // Header Kategori
+                            kurBody.push([{ content: cat.title, colSpan: 3, styles: { fillColor: [200, 200, 200], fontStyle: 'bold' } }]); 
+                            
+                            // Item Materi
                             cat.items.forEach((item, iIdx) => {
                                 const key = `${cIdx}-${iIdx}`;
                                 const isDone = pData[key] ? "Selesai" : "Belum Selesai";
@@ -1408,19 +1511,205 @@
                 }
                 finally { UI.loader(false); }
             },
-
+            
             scoreToLetter: function(avg) {
-                if(avg >= 3.8) return 'A';
-                if(avg >= 3.5) return 'A-';
-                if(avg >= 3.2) return 'B+';
-                if(avg >= 2.8) return 'B';
-                if(avg >= 2.5) return 'B-';
-                if(avg >= 2.0) return 'C';
-                if(avg >= 1.0) return 'D';
-                return 'E';
+                if(avg >= 3.8) return 'A'; if(avg >= 3.5) return 'A-'; if(avg >= 3.2) return 'B+'; if(avg >= 2.8) return 'B'; if(avg >= 2.5) return 'B-'; if(avg >= 2.0) return 'C'; if(avg >= 1.0) return 'D'; return 'E';
             }
         };
 
+        // ==========================================
+        // MODULE LEGER (FIXED)
+        // ==========================================
+        // ==========================================
+        // MODULE LEGER (UPDATED DYNAMIC FILTERS)
+        // ==========================================
+        const Leger = {
+            currentData: [],
+
+            // 1. Populate Dropdown Desa (Khusus Daerah)
+            populateDesaFilter: function() {
+                if(Generus.allData && Generus.allData.length > 0) {
+                    const desaSet = new Set(Generus.allData.map(d => d.desa).filter(d=>d));
+                    const sel = document.getElementById('legerFilterDesa');
+                    sel.innerHTML = '<option value="">Semua Desa</option>'; // Value kosong = Semua
+                    desaSet.forEach(d => sel.innerHTML += `<option value="${d}">${d}</option>`);
+                    
+                    // Trigger update kelompok saat pertama load (Ambil semua kelompok karena desa = "Semua")
+                    this.populateGroupFilter(""); 
+                }
+            },
+
+            // 2. Populate Dropdown Semester (Dari Data Backend)
+            populateSemesterFilter: function(semesterList) {
+                const sel = document.getElementById('legerSemester');
+                sel.innerHTML = '<option value="">Semua Semester</option>';
+                if(semesterList && semesterList.length > 0) {
+                    semesterList.forEach(s => {
+                        sel.innerHTML += `<option value="${s}">${s}</option>`;
+                    });
+                }
+            },
+
+            // 3. Populate Dropdown Kelompok (Berdasarkan Desa yang dipilih)
+            populateGroupFilter: function(desaValue) {
+                const sel = document.getElementById('legerFilterKelompok');
+                sel.innerHTML = '<option value="">Semua Kelompok</option>';
+                
+                // Filter data Generus
+                let filteredData = Generus.allData;
+                
+                // Logika Jika Akun Daerah:
+                if(currentUser.role === 'daerah') {
+                    // Jika desaValue tidak kosong (artinya user memilih desa tertentu), filter data generus
+                    if(desaValue && desaValue.trim() !== "") {
+                        filteredData = Generus.allData.filter(d => d.desa === desaValue);
+                    }
+                    // Jika kosong ("Semua Desa"), biarkan filteredData tetap semua data (atau filter berdasarkan lokasi daerah saja)
+                    else {
+                        filteredData = Generus.allData.filter(d => d.desa); // Pastikan hanya yang punya desa
+                    }
+                } 
+                // Logika Jika Akun Desa:
+                else if (currentUser.role === 'desa') {
+                    // User desa sudah terfilter otomatis, jadi ambil allData (yang sudah difilter role)
+                }
+
+                // Ambil Kelompok Unik
+                const kelSet = new Set(filteredData.map(d => d.kelompok).filter(k=>k));
+                kelSet.forEach(k => sel.innerHTML += `<option value="${k}">${k}</option>`);
+            },
+
+            loadData: async function() {
+                UI.loader(true);
+                const semester = document.getElementById('legerSemester').value;
+                const desa = currentUser.role === 'desa' ? currentUser.desa : document.getElementById('legerFilterDesa').value;
+                const kelompok = document.getElementById('legerFilterKelompok').value;
+
+                try {
+                    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({
+                        action: 'getLegerData',
+                        role: currentUser.role,
+                        lokasi: currentUser.lokasi,
+                        desa: desa,
+                        kelompok: kelompok,
+                        semester: semester
+                    })});
+                    const json = await res.json();
+                    
+                    if(json.status === 'success') {
+                        this.currentData = json.data;
+                        
+                        // Populate Dropdown Semester dari hasil fetch backend
+                        this.populateSemesterFilter(json.semesters);
+                        
+                        this.renderStats(json.stats);
+                        this.renderTable(json.data);
+                    } else {
+                        UI.toast('Gagal ambil data', 'error');
+                        this.renderTable([]); 
+                    }
+                } catch(e) { 
+                    UI.toast('Error koneksi', 'error'); 
+                }
+                finally { UI.loader(false); }
+            },
+
+            // Tambahkan event listener untuk change Desa -> Update Kelompok
+            initDesaListener: function() {
+                const desaSel = document.getElementById('legerFilterDesa');
+                if(desaSel) {
+                    desaSel.addEventListener('change', (e) => {
+                        this.populateGroupFilter(e.target.value);
+                    });
+                }
+            },
+
+            renderStats: function(stats) {
+                const container = document.getElementById('legerStatsGrid');
+                const area = document.getElementById('legerStatsArea');
+                
+                if(!stats || stats.length === 0) {
+                    area.classList.add('hidden');
+                    return;
+                }
+                
+                area.classList.remove('hidden');
+                container.innerHTML = '';
+                
+                stats.forEach(s => {
+                    let colorClass = 'text-muted';
+                    if(s.predicate === 'A' || s.predicate === 'A-') colorClass = 'text-primary';
+                    else if(s.predicate.startsWith('B')) colorClass = 'text-info';
+                    else if(s.predicate === 'C') colorClass = 'text-warning';
+                    else colorClass = 'text-danger';
+
+                    container.innerHTML += `
+                    <div class="stat-card">
+                        <h4 style="font-size:0.9rem; color:var(--text-muted);">${s.name}</h4>
+                        <div style="font-size:1.5rem; font-weight:bold;" class="${colorClass}">${s.predicate}</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted);">Avg: ${s.avg}</div>
+                    </div>`;
+                });
+            },
+
+            renderTable: function(data) {
+                const tbody = document.getElementById('legerTableBody');
+                tbody.innerHTML = '';
+                if(data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Tidak ada data rapot ditemukan untuk filter ini.</td></tr>`;
+                    return;
+                }
+
+                data.forEach((d, i) => {
+                    let badgeColor = 'badge-A'; 
+                    if(d.predikat === 'B' || d.predikat === 'B+' || d.predikat === 'B-') badgeColor = 'badge-S';
+                    if(d.predikat === 'C') badgeColor = 'badge-I';
+                    if(d.predikat === 'D' || d.predikat === 'E') badgeColor = 'badge-A'; 
+
+                    if(d.predikat.startsWith('A')) badgeColor = 'badge-H'; // Hijau
+                    else if(d.predikat.startsWith('B')) badgeColor = 'badge-I'; // Biru
+                    else if(d.predikat === 'C') badgeColor = 'badge-S'; // Kuning
+                    else badgeColor = 'badge-A'; // Merah
+
+                    tbody.innerHTML += `
+                    <tr>
+                        <td>${i+1}</td>
+                        <td><b>${d.nama}</b></td>
+                        <td>${d.kelompok}</td>
+                        <td>${d.desa}</td>
+                        <td>${d.semester}</td>
+                        <td style="text-align:center; font-weight:bold;">${d.rataRata}</td>
+                        <td style="text-align:center;"><span class="status-badge ${badgeColor}">${d.predikat}</span></td>
+                    </tr>`;
+                });
+            },
+
+            downloadExcel: function() {
+                if(!this.currentData || this.currentData.length === 0) return UI.toast('Tidak ada data untuk diunduh', 'error');
+
+                const allSubjects = new Set();
+                this.currentData.forEach(d => {
+                    Object.keys(d.nilaiRaw).forEach(k => allSubjects.add(k));
+                });
+                const subjectsArr = Array.from(allSubjects).sort();
+
+                const sheetData = [];
+                const headerRow = ["No", "Nama", "Kelompok", "Desa", "Semester", ...subjectsArr, "Rata-rata", "Predikat"];
+                sheetData.push(headerRow);
+
+                this.currentData.forEach((d, i) => {
+                    const row = [i+1, d.nama, d.kelompok, d.desa, d.semester];
+                    subjectsArr.forEach(sub => row.push(d.nilaiRaw[sub] || "-"));
+                    row.push(d.rataRata, d.predikat);
+                    sheetData.push(row);
+                });
+
+                const ws = XLSX.utils.aoa_to_sheet(sheetData);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Leger Nilai");
+                XLSX.writeFile(wb, `Leger_Nilai_${currentUser.lokasi}_${new Date().toISOString().slice(0,10)}.xlsx`);
+            }
+        };
         // ==========================================
         // MODULE JADWAL KBM (UPDATED)
         // ==========================================
