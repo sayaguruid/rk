@@ -36,7 +36,7 @@
         .btn-secondary { background-color: white; border: 1px solid var(--border); color: var(--text-main); }
         .btn-secondary:hover { background-color: var(--bg-body); border-color: #cbd5e1; }
         .btn-danger { background-color: var(--danger-bg); color: var(--danger); border: 1px solid transparent; }
-        .btn-danger:hover { background-color: #fee2e2e; border-color: #fecaca; }
+        .btn-danger:hover { background-color: #fee2e2; border-color: #fecaca; }
         .btn-sm { padding: 6px 12px; font-size: 0.8rem; } .btn-block { width: 100%; }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
@@ -81,6 +81,12 @@
         .badge-S { background: var(--warning-bg); color: var(--warning); }
         .badge-I { background: var(--info-bg); color: var(--info); }
         .badge-A { background: var(--danger-bg); color: var(--danger); }
+        .badge-MT { background: #dbeafe; color: #1e40af; }
+        .badge-MS { background: #e0e7ff; color: #3730a3; }
+        .badge-GB { background: #f3e8ff; color: #6b21a8; }
+        .badge-YA { background: #dcfce7; color: #166534; }
+        .badge-TIDAK { background: #fee2e2; color: #991b1b; }
+
         .jadwal-item { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border); background: white; }
         .jadwal-item:last-child { border-bottom: none; }
         .jadwal-time { font-weight: 700; color: var(--primary); min-width: 80px; }
@@ -170,8 +176,11 @@
                     <h2 class="page-title"><i class="fas fa-users text-primary"></i> Data Generus</h2>
                     <button class="btn btn-primary" onclick="Generus.openModal()"><i class="fas fa-plus"></i> Tambah</button>
                 </div>
-                <div class="filter-bar">
-                    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="genSearch" placeholder="Cari nama..." onkeyup="Generus.applyFilters()"></div>
+                <div class="filter-bar" style="display:flex; gap:10px; margin-bottom:20px;">
+                    <div class="search-box" style="position:relative; flex:1;">
+                        <i class="fas fa-search" style="position:absolute; left:10px; top:10px; color:var(--text-muted);"></i>
+                        <input type="text" id="genSearch" placeholder="Cari nama..." onkeyup="Generus.applyFilters()" style="padding-left:35px;" class="form-control">
+                    </div>
                     <select id="filterJenjang" class="form-control" style="width:140px;" onchange="Generus.applyFilters()"><option value="">Semua Jenjang</option><option value="PAUD">PAUD</option><option value="Caberawit">Caberawit</option><option value="Pra Remaja">Pra Remaja</option><option value="Remaja">Remaja</option></select>
                     <select id="filterJK" class="form-control" style="width:120px;" onchange="Generus.applyFilters()"><option value="">Semua JK</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select>
                 </div>
@@ -202,8 +211,11 @@
                     <h2 class="page-title"><i class="fas fa-chalkboard-teacher text-primary"></i> Data Guru</h2>
                     <button class="btn btn-primary" onclick="Guru.openModal()"><i class="fas fa-plus"></i> Tambah</button>
                 </div>
-                <div class="filter-bar">
-                    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="guruSearch" placeholder="Cari nama guru..." onkeyup="Guru.applyFilters()"></div>
+                <div class="filter-bar" style="display:flex; gap:10px; margin-bottom:20px;">
+                    <div class="search-box" style="position:relative; flex:1;">
+                        <i class="fas fa-search" style="position:absolute; left:10px; top:10px; color:var(--text-muted);"></i>
+                        <input type="text" id="guruSearch" placeholder="Cari nama guru..." onkeyup="Guru.applyFilters()" style="padding-left:35px;" class="form-control">
+                    </div>
                     <select id="filterGuruStatus" class="form-control" style="width:140px;" onchange="Guru.applyFilters()">
                         <option value="">Semua Status</option>
                         <option value="MT">MT</option><option value="MS">MS</option><option value="Guru Bantu">Guru Bantu</option>
@@ -345,7 +357,7 @@
                     </div>
                 </div>
                 <div id="kur-dashboard-view">
-                    <div class="filter-bar" style="display:inline-flex; width:100%; max-width:400px;">
+                    <div class="filter-bar" style="display:inline-flex; width:100%; max-width:400px; align-items:center;">
                         <label class="font-medium" style="margin-right:10px;">Filter Jenjang:</label>
                         <select id="kurDashboardFilterJenjang" class="form-control" onchange="Kurikulum.loadDashboard()">
                             <option value="">Semua Jenjang</option>
@@ -405,7 +417,8 @@
                 <div class="form-group"><label>Nama Lengkap</label><input type="text" id="genNama" class="form-control" required placeholder="Nama lengkap..."></div>
                 <div class="flex gap-4">
                     <div class="form-group" style="flex:1;"><label>Jenis Kelamin</label><select id="genJK" class="form-control"><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></div>
-                    <div class="form-group" style="flex:1;"><label>Kelas</label><select id="genKelas" class="form-control" required><option value="Belum Sekolah">Belum Sekolah</option><option value="PAUD">PAUD</option><option value="TK">TK</option><option value="1">Kelas 1</option><option value="2">Kelas 2</option><option value="3">Kelas 3</option><option value="4">Kelas 4</option value="5">Kelas 5</option><option value="6">Kelas 6</option><option value="7">Kelas 7</option><option value="8">Kelas 8</option><option value="9">Kelas 9</option><option value="10">Kelas 10</option><option value="11">Kelas 11</option><option value="12">Kelas 12</option><option value="Mahasiswa">Mahasiswa</option><option value="S1">S1</option><option value="S2">S2</option></select></div>
+                    <div class="form-group" style="flex:1;"><label>Kelas</label><select id="genKelas" class="form-control" required><option value="Belum Sekolah">Belum Sekolah</option><option value="PAUD">PAUD</option><option value="TK">TK</option><option value="1">Kelas 1</option><option value="2">Kelas 2</option><option value="3">Kelas 3</option><option value="4">Kelas 4</option><option value="5">Kelas 5</option><option value="6">Kelas 6</option><option value="7">Kelas 7</option><option value="8">Kelas 8</option><option value="9">Kelas 9</option><option value="10">Kelas 10</option><option value="11">Kelas 11</option><option value="12">Kelas 12</option><option value="Mahasiswa">Mahasiswa</option><option value="S1">S1</option><option value="S2">S2</option></select></div>
+                </div>
                 <div class="flex gap-4">
                     <div class="form-group" style="flex:1;"><label>Tempat Lahir</label><input type="text" id="genTmpLahir" class="form-control"></div>
                     <div class="form-group" style="flex:1;"><label>Tanggal Lahir</label><input type="date" id="genTglLahir" class="form-control"></div>
@@ -568,8 +581,8 @@
                 else if (modName === 'generus') Generus.init();
                 else if (modName === 'guru') Guru.init();
             }
-        }
         };
+
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
 
         // --- MODULES (FULL IMPLEMENTATION) ---
@@ -600,13 +613,14 @@
                 if (this.filteredData.length === 0) { tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted p-4">Tidak ada data</td></tr>`; return; }
                 this.filteredData.forEach((d) => {
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${d.no}</td><td><div class="font-bold text-main">${d.nama}</div><div><div class="text-xs text-muted">A: ${d.ayah||'-'} | I: ${d.ibu||'-'}</div></td><td><span class="status-badge" style="background:${d.jk==='L'?'#e0f2fe':'#fce7f3'}; color:${d.jk==='L'?'#0284c7':'#db2777'}">${d.jk}</span></td><td>${d.umur || '-'}</td><td>${d.kelas}</td><td><span style="background:var(--primary-light); color:var(--primary-hover); padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">${d.jenjang||'-'}</span></td><td><small class="text-muted">${d.kelompok || '-'} <br> ${d.desa || '-'}</small></td><td class="action-col"><button class="btn btn-sm btn-secondary" onclick="Generus.edit(${d.rowIndex})"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger" onclick="Generus.del(${d.rowIndex})"><i class="fas fa-trash"></i></button></td>`;
+                    tr.innerHTML = `<td>${d.no}</td><td><div class="font-bold text-main">${d.nama}</div><div class="text-xs text-muted">A: ${d.ayah||'-'} | I: ${d.ibu||'-'}</div></td><td><span class="status-badge" style="background:${d.jk==='L'?'#e0f2fe':'#fce7f3'}; color:${d.jk==='L'?'#0284c7':'#db2777'}">${d.jk}</span></td><td>${d.umur || '-'}</td><td>${d.kelas}</td><td><span style="background:var(--primary-light); color:var(--primary-hover); padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">${d.jenjang||'-'}</span></td><td><small class="text-muted">${d.kelompok || '-'} <br> ${d.desa || '-'}</small></td><td class="action-col"><button class="btn btn-sm btn-secondary" onclick="Generus.edit(${d.rowIndex})"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger" onclick="Generus.del(${d.rowIndex})"><i class="fas fa-trash"></i></button></td>`;
                     tbody.appendChild(tr);
                 });
             },
             openModal: function() { document.querySelector('#modalGen form').reset(); document.getElementById('genRowIndex').value=''; UI.openModal('modalGen'); },
             saveForm: async function() {
-                const valOrSpace = (val) => (val === undefined || val === null || val === "") ? " " : val);
+                // PERBAIKAN: Syntax error valOrSpace
+                const valOrSpace = (val) => (val === undefined || val === null || val === "") ? " " : val;
                 const kelas = document.getElementById('genKelas').value;
                 const tglInput = document.getElementById('genTglLahir').value;
                 let tgl = ""; if(tglInput){const p=tglInput.split('-'); if(p.length===3) tgl=`${p[2]}/${p[1]}/${p[0]}`;}
@@ -631,12 +645,12 @@
                 const search = document.getElementById('guruSearch').value.toLowerCase();
                 const fStatus = document.getElementById('filterGuruStatus').value;
                 const fJK = document.getElementById('filterGuruJK').value;
+                // PERBAIKAN: Hapus referensi fMengajar yang tidak ada di form filter
                 this.filteredData = this.allData.filter(d => {
                     const matchSearch = d.nama.toLowerCase().includes(search);
                     const matchStatus = fStatus ? d.status === fStatus : true;
                     const matchJK = fJK ? d.jk === fJK : true;
-                    const matchMengajar = fMengajar ? d.mengajar === fMengajar : true;
-                    return matchSearch && matchStatus && matchJK && matchMengajar;
+                    return matchSearch && matchStatus && matchJK;
                 }); this.renderTable();
             },
             renderTable: function() {
@@ -649,7 +663,8 @@
             },
             openModal: function() { document.querySelector('#modalGuru form').reset(); document.getElementById('guruRowIndex').value=''; UI.openModal('modalGuru'); },
             saveForm: async function() {
-                const valOrSpace = (val) => (val === undefined || val === null || val === "") ? " " : val);
+                // PERBAIKAN: Syntax error valOrSpace
+                const valOrSpace = (val) => (val === undefined || val === null || val === "") ? " " : val;
                 const payload = { rowIndex: document.getElementById('guruRowIndex').value, no: valOrSpace(document.getElementById('guruNo').value), nama: valOrSpace(document.getElementById('guruNama').value), jk: valOrSpace(document.getElementById('guruJK').value), status: valOrSpace(document.getElementById('guruStatus').value), hp: valOrSpace(document.getElementById('guruHP').value), mengajar: valOrSpace(document.getElementById('guruMengajar').value), kelompok: valOrSpace(currentUser.lokasi), desa: valOrSpace(currentUser.desa) };
                 UI.loader(true); const action = payload.rowIndex ? 'editGuruData' : 'addGuruData';
                 try { const res = await fetch(API_URL, { method: 'post', body: JSON.stringify({ action, payload }) }); if((await res.json()).status === 'success') { UI.toast('Data guru tersimpan'); UI.closeModal('modalGuru'); this.init(); } } catch(e){ UI.toast('Gagal simpan','error'); } finally{UI.loader(false);} 
@@ -724,7 +739,7 @@
                     const item = json.history.find(h => String(h.timestamp) === String(ts));
                     if(item) {
                         document.getElementById('jurnTimestamp').value = item.timestamp; document.getElementById('jurnJenjang').value = item.jenjang; document.getElementById('jurnDate').value = item.tanggal.split('/').reverse().join('-'); document.getElementById('jurnMateri').value = item.materi; await this.loadMembers(); 
-                        const attendance = JSON.parse(item.kehadiran); attendance.forEach(att => { this.members.forEach(m => { if(m.nama === att.nama) document.getElementById(`status_${m.no}`).value = att.status; }); }); });
+                        const attendance = JSON.parse(item.kehadiran); attendance.forEach(att => { this.members.forEach(m => { if(m.nama === att.nama) document.getElementById(`status_${m.no}`).value = att.status; }); }); 
                         this.switchTab('input', document.querySelectorAll('.tab-btn')[0]);
                     }
                 } catch(e) { UI.toast('Gagal memuat data edit', 'error'); } finally { UI.loader(false); }
@@ -754,7 +769,7 @@
                     container.appendChild(div);
                 });
             },
-            openModal: function() { document.querySelector('#modalJadwal form').reset(); document.getElementById('jadwalRowIndex') = ''; document.getElementById('jadwalKelompok').value = currentUser.lokasi; document.getElementById('jadwalDesa').value = currentUser.desa; UI.openModal('modalJadwal'); },
+            openModal: function() { document.querySelector('#modalJadwal form').reset(); document.getElementById('jadwalRowIndex').value = ''; document.getElementById('jadwalKelompok').value = currentUser.lokasi; document.getElementById('jadwalDesa').value = currentUser.desa; UI.openModal('modalJadwal'); },
             save: async function() {
                 const payload = { rowIndex: document.getElementById('jadwalRowIndex').value, hari: document.getElementById('jadwalHari').value, jam: document.getElementById('jadwalJam').value, jenjang: document.getElementById('jadwalJenjang').value, pengajar: document.getElementById('jadwalPengajar').value, sistemPembelajaran: document.getElementById('jadwalSistem').value, kelompok: document.getElementById('jadwalKelompok').value, desa: document.getElementById('jadwalDesa').value };
                 UI.loader(true);
@@ -797,7 +812,7 @@
                 document.querySelectorAll('#mod-kurikulum .tab-btn').forEach(t => t.classList.remove('active')); if(btnElement) btnElement.classList.add('active');
                 document.getElementById('kur-dashboard-view').classList.toggle('hidden', view !== 'dashboard');
                 document.getElementById('kur-detail-view').classList.toggle('hidden', view !== 'detail');
-                if(view === 'dashboard') this.loadDashboard(); else { document.getElementById('kurContent').classList.add('hidden'); document.getElementById('kurStudentSelect').value = ""; } }
+                if(view === 'dashboard') this.loadDashboard(); else { document.getElementById('kurContent').classList.add('hidden'); document.getElementById('kurStudentSelect').value = ""; } 
             },
             loadDashboard: async function() {
                 const content = document.getElementById('kurDashboardContent'); content.innerHTML = '<div class="text-center p-4"><div class="spinner" style="margin:0 auto;"></div><p class="text-muted mt-2">Memuat rekapitulasi...</div>';
@@ -817,7 +832,7 @@
                         let dashboardHtml = ''; const sortedKeys = Object.keys(groupStats).sort();
                         if (sortedKeys.length === 0) { dashboardHtml = '<div class="text-center p-4 bg-white border rounded text-muted">Tidak ada data kurikulum ditemukan.</div>'; } else {
                             sortedKeys.forEach(key => {
-                                const stats = groupStats[key]; let pct = stats.totalItems > 0 ? Math.round((stats.checkedItems / stats.totalItems) * 100) : 0; let displayName = key; if (currentUser.role === 'desa') displayName = key.split(' - ')[0]; dashboardHtml += `<div class="stat-card"><div class="flex justify-between items-center mb-2"><h4 class="font-bold text-primary m-0" style="font-size:1.1rem;">${displayName}</h4><div class="text-right"><div class="text-xs text-muted font-bold uppercase tracking-wide">Pencapaian</div><div class="text-xl font-bold text-primary">${pct}%</div></div></div><div class="bg-gray-100 rounded-full h-2 overflow-hidden" style="background:#e2e8f0; height:8px; border-radius:4px;"><div style="width:${pct}%; background:var(--primary); height:100%; transition:width 0.6s;"></div><div class="mt-2 text-xs text-muted">${stats.checkedItems} dari ${stats.totalItems} Materi Tercapai <br> <span class="font-bold text-main">(${stats.memberCount} Siswa)</span></div></div>`;
+                                const stats = groupStats[key]; let pct = stats.totalItems > 0 ? Math.round((stats.checkedItems / stats.totalItems) * 100) : 0; let displayName = key; if (currentUser.role === 'desa') displayName = key.split(' - ')[0]; dashboardHtml += `<div class="stat-card"><div class="flex justify-between items-center mb-2"><h4 class="font-bold text-primary m-0" style="font-size:1.1rem;">${displayName}</h4><div class="text-right"><div class="text-xs text-muted font-bold uppercase tracking-wide">Pencapaian</div><div class="text-xl font-bold text-primary">${pct}%</div></div></div><div class="bg-gray-100 rounded-full h-2 overflow-hidden" style="background:#e2e8f0; height:8px; border-radius:4px;"><div style="width:${pct}%; background:var(--primary); height:100%; transition:width 0.6s;"></div></div><div class="mt-2 text-xs text-muted">${stats.checkedItems} dari ${stats.totalItems} Materi Tercapai <br> <span class="font-bold text-main">(${stats.memberCount} Siswa)</span></div></div>`;
                             });
                         }
                     content.innerHTML = dashboardHtml;
@@ -845,9 +860,10 @@
                 if(!curriculumData) {
                     const area = document.getElementById('kurChecklistArea'); 
                     area.innerHTML = `<div class="text-center p-4 rounded bg-yellow-50 text-yellow-700 border border border-yellow-200"><i class="fas fa-exclamation-triangle"></i> Kurikulum tidak ditemukan untuk <b>${jenjang}</b>.</div>`;
-                    this.updateProgressBar(0); UI.loader(false); return; 
+                    this.updateProgressUI(0, 0); UI.loader(false); return; 
                 }
-                const pRes = await fetch(API_URL, { method: 'post', body: JSON.stringify({ action: 'getProgress', student: selectedName, jenjang: jenjang }) }));
+                // PERBAIKAN: Syntax fetch (extra parenthesis)
+                const pRes = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getProgress', student: selectedName, jenjang: jenjang }) });
                 const pJson = await pRes.json(); let savedData = {};
                 if(pJson.status === 'success' && pJson.data) { savedData = pJson.data.progressData || {}; }
                 const area = document.getElementById('kurChecklistArea'); area.innerHTML = ''; let html = ''; 
@@ -859,7 +875,7 @@
                     }); html += `</div></div>`;
                 });
                 area.innerHTML = html;
-                const checkboxes = area.querySelectorAll('input[type="checkbox]');
+                const checkboxes = area.querySelectorAll('input[type="checkbox"]');
                 const total = checkboxes.length; const checked = area.querySelectorAll('input[type="checkbox"]:checked').length; this.updateProgressUI(checked, total);
             } catch(e) { UI.toast('Gagal muat progress siswa', 'error'); } finally { UI.loader(false); }
         },
@@ -876,7 +892,8 @@
             const selectedOption = document.getElementById('kurStudentSelect').options[document.getElementById('kurStudentSelect').selectedIndex];
             const jenjang = selectedOption.getAttribute('data-jenjang');
             if(!selectedName) return UI.toast('Pilih siswa terlebih dahulu', 'error');
-            const checkboxes = document.querySelectorAll('#kurChecklistArea input[type="checkbox"); const progressData = {}; 
+            // PERBAIKAN: Selector syntax (missing ])
+            const checkboxes = document.querySelectorAll('#kurChecklistArea input[type="checkbox"]'); const progressData = {}; 
             checkboxes.forEach(cb => { const key = cb.id.replace('chk_', ''); progressData[key] = cb.checked; });
             UI.loader(true);
             try { 
@@ -920,30 +937,32 @@
                 try {
                     const gRes = await fetch(API_URL, { method: 'post', body: JSON.stringify({ action: 'getNilaiRapot', nama }) });
                     const gJson = await gRes.json(); const savedGrades = gJson.status === 'success' ? gJson.grades : {};
-                    const aRes = await fetch(API_URL, { method: post, body: JSON.stringify({ action: 'getRapotData', nama, jenjang }) }));
-                    const aJson = await aJson.json; this.studentData = aJson; const att = aJson.attendance;
+                    // PERBAIKAN: method 'post' string, json() method, parenthesis
+                    const aRes = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getRapotData', nama, jenjang }) });
+                    const aJson = await aRes.json(); 
+                    this.studentData = aJson; const att = aJson.attendance;
                     document.getElementById('raportAttDetail').innerText = `Hadir: ${att.hadir}/${att.total} | Sakit: ${att.sakit} | Izin: ${att.izin} | Alpha: ${att.alpha}`;
-                    document.getElementById('raportGradesForm').innerHTML = ''; 
-                    if(this.subjects.length === 0) { document.getElementById('raportGradesForm').innerHTML = '<p class="text-muted w-100">Tidak ada mata pelajaran/kurikulum yang ditemukan di Sheet.</p>'; } else { 
+                    const formContainer = document.getElementById('raportGradesForm');
+                    formContainer.innerHTML = ''; 
+                    if(this.subjects.length === 0) { formContainer.innerHTML = '<p class="text-muted w-100">Tidak ada mata pelajaran/kurikulum yang ditemukan di Sheet.</p>'; } else { 
                         this.subjects.forEach(subj => {
                             const currentVal = savedGrades[subj] || '';
                             const div = document.createElement('div'); div.style.cssText = "flex:1; min-width: 200px;";
                             div.innerHTML = `<label class="text-sm font-bold text-muted mb-1" style="display:block; margin-bottom:4px;">${subj}</label>
-                            <select name="grade_${subj}" class="form-control raport-grade-select"><option value="">- Pilih -</option>${this.gradeOptions.map(g => `<option value="${g}" ${g === currentVal ? 'selected' : ''}>${g}</option>`).join('}`);
+                            <select name="grade_${subj}" class="form-control raport-grade-select"><option value="">- Pilih -</option>${this.gradeOptions.map(g => `<option value="${g}" ${g === currentVal ? 'selected' : ''}>${g}</option>`).join('')}</select>`;
                             formContainer.appendChild(div);
                         });
                     }
-                }
-            } catch(e) { UI.toast('Gagal memuat data siswa', 'error'); } finally { UI.loader(false); }
+                } catch(e) { UI.toast('Gagal memuat data siswa', 'error'); } finally { UI.loader(false); }
             },
             saveAndPrint: async function() {
-                const nama = document.getElementById('raportStudentSelectFull').value; const jenjang = document.getElementById('raportJenjangDisplay').innerText; const note = document.getElementById('raportNote'). value;
+                const nama = document.getElementById('raportStudentSelectFull').value; const jenjang = document.getElementById('raportJenjangDisplay').innerText; const note = document.getElementById('raportNote').value;
                 const gradeSelects = document.querySelectorAll('.raport-grade-select'); const grades = {}; let isComplete = true;
                 gradeSelects.forEach(sel => { const mapel = sel.name.replace('grade_', ''); if(!sel.value) isComplete = false; grades[mapel] = sel.value; });
                 if(!isComplete) return UI.toast('Mohon lengkapi nilai untuk semua mata pelajaran.', 'error');
                 UI.loader(true);
                 try {
-                    await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'saveNilaiRapot', payload: { nama, jenjang, grades, kelompok: currentUser.lokasi, desa: currentUser.desa } })}));
+                    await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'saveNilaiRapot', payload: { nama, jenjang, grades, kelompok: currentUser.lokasi, desa: currentUser.desa } }) });
                     this.generatePDF(nama, jenjang, grades, note, this.studentData.attendance, this.studentData.progress);
                 } catch(e) { UI.toast('Gagal menyimpan/cetak', 'error'); } finally { UI.loader(false); }
             },
@@ -951,8 +970,10 @@
                 UI.loader(true);
                 try {
                     const jenjangFilter = document.getElementById('ledgerFilterJenjang').value;
-                    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getLedger', role: currentUser.role, lokasi: currentUser.lokasi, desa: currentUser.desa, jenjang: jenjangFilter })}));
-                    const json = await res.json(); if(json.status === 'success') this.generateLedgerPDF(json.data, jenjangFilter) } catch(e) { UI.toast('Gagal memuat data ledger', 'error'); } finally { UI.loader(false); }
+                    // PERBAIKAN: method string & parenthesis
+                    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getLedger', role: currentUser.role, lokasi: currentUser.lokasi, desa: currentUser.desa, jenjang: jenjangFilter }) });
+                    const json = await res.json(); 
+                    if(json.status === 'success') this.generateLedgerPDF(json.data, jenjangFilter) } catch(e) { UI.toast('Gagal memuat data ledger', 'error'); } finally { UI.loader(false); }
             },
             calculateAverage: function(gradesObj) {
                 let totalPoints = 0, count = 0;
@@ -987,41 +1008,40 @@
                 
                 const finalY = doc.lastAutoTable.finalY + 10;
                 
-                // CATATAN GURU & REKAP KEHADIRAN
-                let attY = doc.lastAutoTable.finalY + 40;
-                if(attY > pageHeight - 50) { doc.addPage(); attY = 20; }
-                
+                // CATATAN GURU
                 doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.text("Catatan Guru:", margin, finalY);
                 doc.setFontSize(11); doc.setFont("helvetica", "normal");
                 const splitNote = doc.splitTextToSize(note || "-", pageWidth - (margin * 2)); doc.text(splitNote, margin, finalY + 8);
                 
                 // REKAP KEHADIRAN
                 let attY = doc.lastAutoTable.finalY + 30;
-                if(attY > pageHeight - 40) { doc.addPage(); attY = 20; }
+                if(attY > 280) { doc.addPage(); attY = 20; }
                 
                 doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.text("Rekap Kehadiran:", margin, attY);
                 
-                const attHeaders = [["Kehadiran", "Jumlah"];
+                // PERBAIKAN: Array syntax
+                const attHeaders = [["Kehadiran", "Jumlah"]];
                 const attBody = [
                     ["Hadir", attendance.hadir], ["Sakit", attendance.sakit], ["Izin", attendance.izin], ["Alpha", attendance.alpha], ["Total Sesi", attendance.total]
                 ];
                 doc.autoTable({ startY: attY + 5, head: attHeaders, body: attBody, theme: 'striped', headStyles: { fillColor: [200, 200, 200] } });
                 
                 let sigY = doc.lastAutoTable.finalY + 30;
-                if(sigY > pageHeight - 40) { doc.addPage(); sigY = 20; }
+                if(sigY > 250) { doc.addPage(); sigY = 20; }
                 doc.setFontSize(11); doc.setFont("helvetica", "normal");
                 doc.text("Mengetahui,", margin, sigY);
-                doc.text("Orang Tua / Wali:", pageWidth - margin - 60, sigY + 8);
+                doc.text("Orang Tua / Wali:", pageWidth - margin - 60, sigY);
                 doc.line(margin, sigY + 25, margin + 50, sigY + 25);
-                
                 doc.line(pageWidth - margin, sigY + 25, pageWidth - margin - 10, sigY + 25);
-                doc.text(`Pengajar, ${currentUser.lokasi}`, pageWidth - margin - 60, sigY + 25, pageWidth - margin - 10, sigY + 25);
+                doc.text(`Pengajar,`, pageWidth - margin - 60, sigY + 30);
+                doc.text(currentUser.lokasi, pageWidth - margin - 60, sigY + 35);
                 
                 doc.save(`Raport_${nama.replace(/\s/g,'_')}.pdf`); 
             },
             generateLedgerPDF: function(data, jenjangFilter) {
                 const { jsPDF } = window.jspdf; const doc = new jsPDF('l', 'mm', 'a4'); const pageWidth = doc.internal.pageSize.getWidth(); const margin = 10;
                 doc.setFontSize(16); doc.setFont("helvetica", "bold"); const title = jenjangFilter ? `LEDGER NILAI - ${jenjangFilter}` : "LEDGER NILAI SEMUA JENJANG";
+                doc.text(title, pageWidth / 2, 15, { align: "center" });
                 doc.text(`Wilayah: ${currentUser.role === 'desa' ? currentUser.desa : currentUser.lokasi}`, pageWidth / 2, 22, { align: "center" });
                 
                 const allSubjects = new Set(); Object.values(data).forEach(grades => { Object.keys(grades).forEach(sub => allSubjects.add(sub)); });
