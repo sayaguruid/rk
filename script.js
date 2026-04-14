@@ -1,3 +1,6 @@
+        // ==========================================
+        // CONFIG
+        // ==========================================
         const API_URL = "https://script.google.com/macros/s/AKfycbzvj7GPgRztgGN-dYQBeENF5-G8MhUQC6afCMxncuChQfCrj6BYFww-ZYFXNpRp6R5t3Q/exec"; 
         let currentUser = null;
 
@@ -251,7 +254,7 @@
             },
             openModal: function() { document.querySelector('#modalGuru form').reset(); document.getElementById('guruRowIndex').value = ''; UI.openModal('modalGuru'); },
             saveForm: async function() {
-                const valOrSpace = (val) => (val === undefined || val === null || val === "") ? " " : val;
+                const valOrSpace = (val) => (val === undefined || val === null || val === "") ? " " : val);
                 if (!currentUser || !currentUser.lokasi) { alert("Sesi login tidak valid. Refresh halaman."); return; }
                 const payload = { rowIndex: document.getElementById('guruRowIndex').value, no: valOrSpace(document.getElementById('guruNo').value), nama: valOrSpace(document.getElementById('guruNama').value), jk: valOrSpace(document.getElementById('guruJK').value), status: valOrSpace(document.getElementById('guruStatus').value), hp: valOrSpace(document.getElementById('guruHP').value), mengajar: valOrSpace(document.getElementById('guruMengajar').value), kelompok: valOrSpace(currentUser.lokasi), desa: valOrSpace(currentUser.desa) };
                 UI.loader(true); const action = payload.rowIndex ? 'editGuruData' : 'addGuruData';
@@ -268,18 +271,19 @@
             populateOptions: function() { fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getMemberList', role: currentUser.role, lokasi: currentUser.lokasi, jenjang: '' }) }).then(res => res.json()).then(json => { const kSet = new Set((json.members || []).map(m => m.kelompok).filter(k=>k)); const kSel = document.getElementById('histFilterKelompok'); const statsKSel = document.getElementById('statsFilterKelompok'); [kSel, statsKSel].forEach(sel => { sel.innerHTML = '<option value="">Semua Kelompok</option>'; kSet.forEach(k => sel.innerHTML += `<option value="${k}">${k}</option>`); }); }); },
             switchTab: function(tab, el) { document.querySelectorAll('#mod-jurnal .tab-btn').forEach(t => t.classList.remove('active')); if(el) el.classList.add('active'); document.getElementById('jurnal-input-view').classList.toggle('hidden', tab !== 'input'); document.getElementById('jurnal-history-view').classList.toggle('hidden', tab !== 'history'); document.getElementById('jurnal-stats-view').classList.toggle('hidden', tab !== 'stats'); if(tab === 'history') { const today = new Date().toISOString().split('T')[0]; document.getElementById('histStart').value = today; document.getElementById('histEnd').value = today; this.loadHistory(); } if(tab === 'stats') this.loadStats(); },
             loadMembers: async function() { const jenjang = document.getElementById('jurnJenjang').value; const container = document.getElementById('jurnMemberList'), formArea = document.getElementById('jurnalFormArea'); if(!jenjang) { formArea.classList.add('hidden'); return; } formArea.classList.remove('hidden'); container.innerHTML = '<div class="text-center p-4"><div class="spinner" style="margin:0 auto;"></div></div>'; try { const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getMemberList', role: currentUser.role, lokasi: currentUser.lokasi, jenjang }) }); const json = await res.json(); container.innerHTML = ''; this.members = json.members || []; if(this.members.length === 0) { container.innerHTML = '<p class="text-center text-muted">Tidak ada generus di jenjang ini.</p>'; return; } this.members.forEach(m => { const div = document.createElement('div'); div.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:10px; margin-bottom:8px; background:white; border:1px solid #e2e8f0; border-radius:8px;"; div.innerHTML = `<span class="font-medium text-sm">${m.nama}</span><select id="status_${m.no}" style="padding:4px 8px; border-radius:6px; border:1px solid #cbd5e1; background:white; font-size:0.85rem;"><option value="Hadir">Hadir</option><option value="Sakit">Sakit</option><option value="Izin">Izin</option><option value="Alpha">Alpha</option></select>`; container.appendChild(div); }); } catch(e) { UI.toast('Gagal muat generus', 'error'); } },
-            save: async function() { const jenjang = document.getElementById('jurnJenjang').value, tgl = document.getElementById('jurnDate').value, materi = document.getElementById('jurnMateri').value; if(!jenjang || !tgl || !materi) return UI.toast('Lengkapi data', 'error'); const hadirData = []; this.members.forEach(m => hadirData.push({ nama: m.nama, status: document.getElementById(`status_${m.no}`).value })); UI.loader(true); try { const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'addJurnal', payload: { tanggal: tgl, kelompok: currentUser.lokasi, desa: currentUser.desa, jenjang, materi, hadir: hadirData } }) }); if((await res.json()).status === 'success') { UI.toast('Jurnal tersimpan'); document.getElementById('jurnMateri').value = ''; } } catch(e) { UI.toast('Gagal simpan', 'error'); } finally { UI.loader(false); } },
+            save: async function() { const jenjang = document.getElementById('jurnJenjang').value, tgl = document.getElementById('jurnDate').value, materi = document.getElementById('jurnMateri').value; if(!jenjang || !tgl || !materi) return UI.toast('Lengkapi data', 'error'); const hadirData = []; this.members.forEach(m => hadirData.push({ nama: m.nama, status: document.getElementById(`status_${m.no}`).value } })); UI.loader(true); try { const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'addJurnal', payload: { tanggal: tgl, kelompok: currentUser.lokasi, desa: currentUser.desa, jenjang, materi, hadir: hadirData } }) }); if((await res.json()).status === 'success') { UI.toast('Jurnal tersimpan'); document.getElementById('jurnMateri').value = ''; } } catch(e) { UI.toast('Gagal simpan', 'error'); } finally { UI.loader(false); } },
             loadHistory: async function() { UI.loader(true); this.currentPage = 1; const start = document.getElementById('histStart').value, end = document.getElementById('histEnd').value, kel = document.getElementById('histFilterKelompok').value, jenjang = document.getElementById('histFilterJenjang').value; const payload = { action: 'getJurnalHistory', role: currentUser.role, lokasi: currentUser.lokasi, desa: currentUser.desa, startDate: start || '', endDate: end || '', filterKelompok: kel || '', jenjang: jenjang || '' }; const container = document.getElementById('jurnHistoryContainer'); container.innerHTML = '<div class="text-center p-4"><div class="spinner" style="margin:0 auto;"></div></div>'; document.getElementById('historyPagination').classList.add('hidden'); try { const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); const json = await res.json(); this.allHistoryData = json.history || []; this.renderHistoryPage(); } catch(e) { UI.toast('Gagal muat riwayat', 'error'); } finally { UI.loader(false); } },
             renderHistoryPage: function() { const container = document.getElementById('jurnHistoryContainer'); container.innerHTML = ''; if (this.allHistoryData.length === 0) { container.innerHTML = '<div class="text-center text-muted p-4 bg-white border rounded">Tidak ada data riwayat.</div>'; return; } const start = (this.currentPage - 1) * this.itemsPerPage; const end = start + this.itemsPerPage; const pageData = this.allHistoryData.slice(start, end); pageData.forEach(h => { let hCount=0, sCount=0, iCount=0, aCount=0; try { const list = JSON.parse(h.kehadiran); list.forEach(x => { if(x.status==='Hadir')hCount++; else if(x.status==='Sakit')sCount++; else if(x.status==='Izin')iCount++; else aCount++; }); }catch(e){} const div = document.createElement('div'); div.className = 'history-card'; div.innerHTML = `<div class="flex justify-between items-start mb-2"><div><div class="font-bold text-primary text-lg">${h.tanggal}</div><div class="text-xs text-muted font-medium uppercase tracking-wide">${h.jenjang} ${h.kelompok ? ' - ' + h.kelompok : ''}</div></div><div class="flex gap-2 text-xs font-bold"><span class="badge-H status-badge">H:${hCount}</span><span class="badge-S status-badge">S:${sCount}</span><span class="badge-I status-badge">I:${iCount}</span><span class="badge-A status-badge">A:${aCount}</span></div></div><div class="text-sm text-muted italic mb-3 border-l-2 border-gray-200 pl-3">"${h.materi}"</div><div class="pt-2 border-t border-dashed border-gray-200"><button class="btn btn-sm btn-secondary" onclick="Jurnal.showDetails('${btoa(JSON.stringify(h))}')">Lihat Detail</button></div>`; container.appendChild(div); }); UI.renderPagination('historyPagination', this.allHistoryData.length, this.currentPage, this.itemsPerPage, 'Jurnal.changePage'); },
             changePage: function(page) { const totalPages = Math.ceil(this.allHistoryData.length / this.itemsPerPage); if (page >= 1 && page <= totalPages) { this.currentPage = page; this.renderHistoryPage(); } },
-            showDetails: function(encodedData) { const h = JSON.parse(atob(encodedData)); const listDiv = document.getElementById('modalDetailList'); document.getElementById('modalDetailTitle').innerText = `Kehadiran ${h.tanggal} (${h.jenjang})`; document.getElementById('modalDetailMateri').innerText = `"${h.materi}"`; let html = '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">'; try { const list = JSON.parse(h.kehadiran); list.forEach(x => { let badgeClass = 'badge-A'; if(x.status === 'Hadir') badgeClass = 'badge-H'; else if(x.status === 'Sakit') badgeClass = 'badge-S'; else if(x.status === 'Izin') badgeClass = 'badge-I'; html += `<div style="display:flex; justify-content:space-between; padding:8px; background:#f8fafc; border-radius:6px; font-size:0.85rem;"><span>${x.nama}</span><span class="status-badge ${badgeClass}">${x.status}</span></div>`; }); } catch(e){ html = '<p class="text-danger">Gagal memuat data.</p>'; } html += '</div>'; listDiv.innerHTML = html; UI.openModal('modalDetail'); },
+            showDetails: function(encodedData) { const h = JSON.parse(atob(encodedData)); const listDiv = document.getElementById('modalDetailList'); document.getElementById('modalDetailTitle').innerText = `Kehadir ${h.tanggal} (${h.jenjang})`; document.getElementById('modalDetailMateri').innerText = `"${h.materi}"`; let html = '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">'; try { const list = JSON.parse(h.kehadiran); list.forEach(x => { let badgeClass = 'badge-A'; if(x.status === 'Hadir') badgeClass = 'badge-H'; else if(x.status === 'Sakit') badgeClass = 'badge-S'; else if(x.status === 'Izin') badgeClass = 'badge-I'; else badgeClass = 'badge-A'; html += `<div style="display:flex; justify-content:space-between; padding:8px; background:#f8fafc; border-radius:6px; font-size:0.85rem;"><span>${x.nama}</span><span class="status-badge ${badgeClass}">${x.status}</span></div>`; }); } catch(e){ html = '<p class="text-danger">Gagal memuat data.</p>'; } html += '</div>'; listDiv.innerHTML = html; UI.openModal('modalDetail'); },
             loadStats: async function() { UI.loader(true); const jenjangFilter = document.getElementById('statsFilterJenjang').value; const kelompokFilter = document.getElementById('statsFilterKelompok').value; const startDate = document.getElementById('statsStart').value; const endDate = document.getElementById('statsEnd').value; let payload = { action: 'getJurnalStats', role: currentUser.role, lokasi: currentUser.lokasi, desa: currentUser.desa, jenjang: jenjangFilter, startDate: startDate || '', endDate: endDate || '' }; if (kelompokFilter) payload.filterKelompok = kelompokFilter; try { const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); const json = await res.json(); if(json.status === 'success') { this.statsData = json.history; this.renderChart(json.chartData); this.renderAnalysis(json.analysis); const chartData = json.chartData || []; if(chartData.length > 0) { const totalPct = chartData.reduce((sum, item) => sum + item.percentage, 0); const avg = Math.round(totalPct / chartData.length); document.getElementById('avgAttendanceValue').innerText = avg + "%"; } else { document.getElementById('avgAttendanceValue').innerText = "0%"; } } else { UI.toast(json.message, 'error'); } } catch(e) { UI.toast('Gagal muat statistik', 'error'); } finally { UI.loader(false); } },
-            renderChart: function(data) { const ctx = document.getElementById('attendanceChart').getContext('2d'); if(this.chartInstance) this.chartInstance.destroy(); this.chartInstance = new Chart(ctx, { type: 'line', data: { labels: data.map(d => d.date), datasets: [{ label: 'Kehadiran (%)', data: data.map(d => d.percentage), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4, pointBackgroundColor: '#ffffff', pointBorderColor: '#10b981', pointBorderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } } } }); },
-            renderAnalysis: function(analysis) { const renderList = (id, data) => { const el = document.getElementById(id); el.innerHTML = data.length ? '' : '<small class="text-muted">Tidak ada data</small>'; data.forEach(item => { let detail = `(${item.stat.H}/${item.stat.Total})`; if(currentUser.role !== 'kelompok' && item.kelompoks) detail += `<br><small class="text-muted" style="font-size:0.7rem;">${item.kelompoks}</small>`; el.innerHTML += `<div style="padding:6px 0; border-bottom:1px solid #f1f5f9; font-size:0.85rem;"><b>${item.nama}</b> <span class="text-muted text-xs block">${detail}</span></div>`; }); }; renderList('listRajin', analysis.rajin); renderList('listIzin', analysis.izin); renderList('listSakit', analysis.sakit); renderList('listAlpha', analysis.alpha); },
+            renderChart: function(data) { const ctx = document.getElementById('attendanceChart').getContext('2d'); if(this.chartInstance) this.chartInstance.destroy(); this.chartInstance = new Chart(ctx, { type: 'line', data: { labels: data.map(d => d.date), datasets: [{ label: 'Kehadiran (%)', data: data.map(d => d.percentage), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4, pointBackgroundColor: '#ffffff', pointBorderColor: '#10b981', pointBorderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100, grid: { color: '#f1f5f9'; } x: { grid: { display: false; } } } } }); },
+            renderAnalysis: function(analysis) { const renderList = (id, data) => { const el = document.getElementById(id); el.innerHTML = data.length ? '' : '<small class="text-muted">Tidak ada data</small>'; data.forEach(item => { let detail = `(${item.stat.H}/${item.stat.Total})`; if(currentUser.role !== 'kelompok' && item.kelompoks) detail += `<br><small class="text-muted" style="font-size:0.7rem;">${item.kelompoks}</small>`; el.innerHTML += `<div style="padding:6px 0; border-bottom:1px solid #f1f5f9; font-size:0.85rem;"><b>${item.nama}</b> <span class="text-muted text-xs block">${detail}</span></div>`; }); }); renderList('listRajin', analysis.rajin); renderList('listIzin', analysis.izin); renderList('listSakit', analysis.sakit); renderList('listAlpha', analysis.alpha); },
             downloadRekap: function() { if(!this.statsData || this.statsData.length === 0) return UI.toast('Tidak ada data untuk diunduh.', 'error'); const { jsPDF } = window.jspdf; const doc = new jsPDF(); const startDate = document.getElementById('statsStart').value; const endDate = document.getElementById('statsEnd').value; const startStr = startDate || 'Awal'; const endStr = endDate || 'Akhir'; const fileName = `Laporan_Jurnal_${currentUser.lokasi}_${startStr}_sd_${endStr}.pdf`; const subTitle = `Periode ${startStr} s.d. ${endStr}`; const filterKelompok = document.getElementById('statsFilterKelompok').value; const filterJenjang = document.getElementById('statsFilterJenjang').value; let title = "", tableHeaders = [], tableBody = [], grandTotalPct = 0, countAvg = 0, columnStyles = { 0: { cellWidth: 15 } };
-                if (currentUser.role === 'kelompok') { title = `Laporan Jurnal Pengajian Kelompok ${currentUser.lokasi}`; tableHeaders = [['No', 'Tanggal', 'Materi', 'Jenjang', 'Hadir (%)']]; columnStyles[2] = { cellWidth: 65 }; this.statsData.forEach((h, i) => { let pct = 0; try { const list = JSON.parse(h.kehadiran); if (list.length > 0) pct = Math.round((list.filter(x => x.status === 'Hadir').length / list.length) * 100); } catch(e){} tableBody.push([i + 1, h.tanggal, h.materi, h.jenjang, pct + "%"]); grandTotalPct += pct; countAvg++; }); } else if (currentUser.role === 'desa') { title = filterKelompok ? `Laporan Jurnal Kelompok ${filterKelompok}` : `Laporan Jurnal Desa ${currentUser.desa}`; tableHeaders = [['No', 'Tanggal', 'Materi', 'Jenjang', 'Kelompok', 'Hadir (%)']]; columnStyles[2] = { cellWidth: 55 }; columnStyles[4] = { cellWidth: 35 }; this.statsData.forEach((h, i) => { let pct = 0; try { const list = JSON.parse(h.kehadiran); if (list.length > 0) pct = Math.round((list.filter(x => x.status === 'Hadir').length / list.length) * 100); } catch(e){} tableBody.push([i + 1, h.tanggal, h.materi, h.jenjang, h.kelompok, pct + "%"]); grandTotalPct += pct; countAvg++; }); } else if (currentUser.role === 'daerah') { title = `Rekap Laporan Jurnal ${currentUser.lokasi}`; tableHeaders = [['No', 'Jenjang', 'Rata-rata Hadir', 'Desa']]; columnStyles[1] = { cellWidth: 40 }; columnStyles[3] = { cellWidth: 50 }; const groupMap = {}; this.statsData.forEach(h => { let pct = 0; try { const list = JSON.parse(h.kehadiran); if (list.length > 0) pct = Math.round((list.filter(x => x.status === 'Hadir').length / list.length) * 100); } catch(e){} const key = `${h.jenjang}_${h.kelompok}_${h.desa}`; if (!groupMap[key]) groupMap[key] = { totalPct: 0, count: 0, jenjang: h.jenjang, kelompok: h.kelompok, desa: h.desa }; groupMap[key].totalPct += pct; groupMap[key].count++; }); let index = 1; for (const key in groupMap) { const group = groupMap[key]; const avgPct = Math.round(group.totalPct / group.count); tableBody.push([index++, group.jenjang, avgPct + "%", group.desa]); grandTotalPct += avgPct; countAvg++; } }
-                doc.setFontSize(16); doc.setFont("helvetica", "bold"); doc.text(title, 14, 20); doc.setFontSize(11); doc.setFont("helvetica", "normal"); doc.text(subTitle, 14, 30); doc.autoTable({ startY: 40, head: tableHeaders, body: tableBody, theme: 'striped', headStyles: { fillColor: [16, 185, 129] }, styles: { fontSize: 10, cellPadding: 3, overflow: 'linebreak' }, columnStyles: columnStyles }); const finalY = doc.lastAutoTable.finalY + 10; let overallAvg = countAvg > 0 ? Math.round(grandTotalPct / countAvg) : 0; doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.text(`Rata-rata kehadiran keseluruhan: ${overallAvg}%`, 14, finalY); doc.save(fileName);
-            }
+                if (currentUser.role === 'kelompok') { title = `Laporan Jurnal Pengajian Kelompok ${currentUser.lokasi}`; tableHeaders = [['No', 'Tanggal', 'Materi', 'Jenjang', 'Hadir (%)']]; columnStyles[2] = { cellWidth: 65 }; this.statsData.forEach((h, i) => { let pct = 0; try { const list = JSON.parse(h.kehadiran); if (list.length > 0) pct = Math.round((list.filter(x => x.status === 'Hadir').length / list.length) * 100); } catch(e){} tableBody.push([i + 1, h.tanggal, h.materi, h.jenjang, pct + "%"]); grandTotalPct += pct; countAvg++; }); } else if (currentUser.role === 'desa') { title = filterKelompok ? `Laporan Jurnal Kelompok ${filterKelompok}` : `Laporan Jurnal Desa ${currentUser.desa}`; tableHeaders = [['No', 'Tanggal', 'Materi', 'Jenjang', 'Kelompok', 'Hadir (%)']]; columnStyles[2] = { cellWidth: 55px; columnStyles[4] = { cellWidth: 35px; } this.statsData.forEach((h, i) => { let pct = 0; try { const list = JSON.parse(h.kehadiran); if (list.length > 0) pct = Math.round((list.filter(x => x.status === 'Hadir').length / list.length) * 100); } catch(e){} tableBody.push([i + 1, h.tanggal, h.materi, h.jenjang, h.kelompok, pct + "%"]); grandTotalPct += pct; countAvg++; }); } else if (currentUser.role === 'daerah') { title = `Rekap Laporan Jurnal ${currentUser.lokasi}`; tableHeaders = [['No', 'Jenjang', 'Rata-rata Hadir', 'Desa']]; columnStyles[1] = { cellWidth: 40 }; columnStyles[3] = { cellWidth: 50px; const groupMap = {}; this.statsData.forEach(h => { let pct = 0; try { const list = JSON.parse(h.kehadiran); if (list.length > 0) pct = Math.round((list.filter(x => x.status === 'Hadir').length / list.length) * 100); } catch(e){} const key = `${h.jenjang}_${h.kelompok}_${h.desa}`; if (!groupMap[key]) groupMap[key] = { totalPct: 0, count: 0, jenjang: h.jenjang, kelompok: h.kelompok, desa: h.desa }; groupMap[key].totalPct += pct; groupMap[key].count++; }); let index = 1; for (const key in groupMap) { const group = groupMap[key]; const avgPct = Math.round(group.totalPct / group.count); tableBody.push([index++, group.jenjang, avgPct + "%", group.desa]); grandTotalPct += avgPct; countAvg++; } }
+                doc.setFontSize(16); doc.setFont("helvetica", "bold"); doc.text(title, 14, 20, { align: "center" }); doc.setFontSize(11); doc.setFont("helvetica", "normal"); doc.text(subTitle, 14, 30); doc.autoTable({ startY: 40, head: tableHeaders, body: tableBody, theme: 'striped', headStyles: { fillColor: [16, 185, 129] }, styles: { fontSize: 10, cellPadding: 3, overflow: 'linebreak' }, columnStyles: columnStyles }); const finalY = doc.lastAutoTable.finalY + 10; let overallAvg = countAvg > 0 ? Math.round(grandTotalPct / countAvg) : 0; doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.text(`Rata-rata kehadiran keseluruhan: ${overallAvg}%`, 14, finalY); doc.save(fileName);
+            },
+            scoreToLetter: function(avg) { if(avg >= 3.8) return 'A'; if(avg >= 3.5) return 'A-'; if(avg >= 3.2) return 'B+'; if(avg >= 2.8) return 'B'; if(avg >= 2.5) return 'B-'; if(avg >= 2.0) return 'C'; if(avg >= 1.0) return 'D'; return 'E'; }
         };
 
         const Kurikulum = {
@@ -300,12 +304,12 @@
                 } catch(e) { UI.toast('Gagal inisialisasi kurikulum', 'error'); } finally { UI.loader(false); }
             },
             switchView: function(view, btnElement) { this.currentView = view; document.querySelectorAll('#mod-kurikulum .tab-btn').forEach(t => t.classList.remove('active')); if(btnElement) btnElement.classList.add('active'); document.getElementById('kur-dashboard-view').classList.toggle('hidden', view !== 'dashboard'); document.getElementById('kur-detail-view').classList.toggle('hidden', view !== 'detail'); if(view === 'dashboard') this.loadDashboard(); else { document.getElementById('kurContent').classList.add('hidden'); document.getElementById('kurStudentSelect').value = ""; } },
-            loadDashboard: async function() { const content = document.getElementById('kurDashboardContent'); content.innerHTML = '<div class="text-center p-4"><div class="spinner" style="margin:0 auto;"></div><p class="text-muted mt-2">Memuat rekapitulasi...</p></div>'; try { const filterJenjang = document.getElementById('kurDashboardFilterJenjang').value; const pRes = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getAllProgressData' }) }); const pJson = await pRes.json(); if(pJson.status === 'success' && pJson.data) { let groupStats = {}; const progressMap = {}; pJson.data.forEach(p => { progressMap[p.student] = p.progressData; }); this.allStudents.forEach(student => { if (!progressMap[student.nama]) return; if (filterJenjang && student.jenjang !== filterJenjang) return; let groupKey = ""; if(currentUser.role === 'daerah') groupKey = `${student.kelompok} - ${student.desa}`; else if (currentUser.role === 'desa') groupKey = student.kelompok; if (!groupStats[groupKey]) groupStats[groupKey] = { name: groupKey, totalItems: 0, checkedItems: 0, memberCount: 0 }; const pData = progressMap[student.nama] || {}; const total = Object.keys(pData).length; const checked = Object.values(pData).filter(v => v).length; groupStats[groupKey].totalItems += total; groupStats[groupKey].checkedItems += checked; groupStats[groupKey].memberCount++; }); let dashboardHtml = ''; const sortedKeys = Object.keys(groupStats).sort(); if (sortedKeys.length === 0) { dashboardHtml = '<div class="text-center p-4 bg-white border rounded text-muted">Tidak ada data kurikulum ditemukan.</div>'; } else { sortedKeys.forEach(key => { const stats = groupStats[key]; let pct = stats.totalItems > 0 ? Math.round((stats.checkedItems / stats.totalItems) * 100) : 0; let displayName = key; if (currentUser.role === 'desa') displayName = key.split(' - ')[0]; dashboardHtml += `<div class="stat-card"><div class="flex justify-between items-center mb-2"><h4 class="font-bold text-primary m-0" style="font-size:1.1rem;">${displayName}</h4><div class="text-right"><div class="text-xs text-muted font-bold uppercase">Pencapaian</div><div class="text-xl font-bold text-primary">${pct}%</div></div></div><div class="bg-gray-100 rounded-full h-2 overflow-hidden" style="background:#e2e8f0; height:8px; border-radius:4px;"><div style="width:${pct}%; background:var(--primary); height:100%; transition:width 0.6s;"></div></div><div class="mt-2 text-xs text-muted">${stats.checkedItems} dari ${stats.totalItems} Materi Tercapai <br> <span class="font-bold text-main">(${stats.memberCount} Siswa)</span></div></div>`; }); } content.innerHTML = dashboardHtml; } else { content.innerHTML = '<p class="text-center text-danger">Gagal memuat data.</p>'; } } catch(e) { UI.toast('Gagal memuat dashboard', 'error'); content.innerHTML = '<p class="text-center text-danger">Terjadi kesalahan.</p>'; } },
+            loadDashboard: async function() { const content = document.getElementById('kurDashboardContent'); content.innerHTML = '<div class="text-center p-4"><div class="spinner" style="margin:0 auto;"></div><p class="text-muted mt-2">Memuat rekapitulasi...</p></div>'; try { const filterJenjang = document.getElementById('kurDashboardFilterJenjang').value; const pRes = await fetch(API_URL, { method: 'post', body: JSON.stringify({ action: 'getAllProgressData' }) }); const pJson = await pRes.json(); if(pJson.status === 'success' && pJson.data) { let groupStats = {}; const progressMap = {}; pJson.data.forEach(p => { progressMap[p.student] = p.progressData; }); this.allStudents.forEach(student => { if (!progressMap[student.nama]) return; if (filterJenjang && student.jenjang !== filterJenjang) return; let groupKey = ""; if(currentUser.role === 'daerah') groupKey = `${student.kelompok} - ${student.desa}`; else if (currentUser.role === 'desa') groupKey = student.kelompok; if (!groupStats[groupKey]) groupStats[groupKey] = { name: groupKey, totalItems: 0, checkedItems: 0, memberCount: 0 }; const pData = progressMap[student.nama] || {}; const total = Object.keys(pData).length; const checked = Object.values(pData).filter(v => v).length; groupStats[groupKey].totalItems += total; groupStats[groupKey].checkedItems += checked; groupStats[groupKey].memberCount++; }); let dashboardHtml = ''; const sortedKeys = Object.keys(groupStats).sort(); if (sortedKeys.length === 0) { dashboardHtml = '<div class="text-center p-4 bg-white border rounded text-muted">Tidak ada data kurikulum ditemukan.</div>'; } else { sortedKeys.forEach(key => { const stats = groupStats[key]; let pct = stats.totalItems > 0 ? Math.round((stats.checkedItems / stats.totalItems) * 100) : 0; let displayName = key; if (currentUser.role === 'desa') displayName = key.split(' - ')[0]; dashboardHtml += `<div class="stat-card"><div class="flex justify-between items-center mb-2"><h4 class="font-bold text-primary m-0" style="font-size:1.1rem;">${displayName}</h4><div class="text-right"><div class="text-xs text-muted font-bold uppercase tracking-wide">Pencapaian</div><div class="text-xl font-bold text-primary">${pct}%</div></div></div><div class="bg-gray-100 rounded-full h-2 overflow-hidden" style="background:#e2e8f0; height:8px; border-radius:4px;"><div style="width:${pct}%; background:var(--primary); height:100%; transition:width: 0.6s;"></div></div><div class="mt-2 text-xs text-muted">${stats.checkedItems} dari ${stats.totalItems} Materi Tercapai <br> <span class="font-bold text-main">(${stats.memberCount} Siswa)</span></div></div>`; }); } content.innerHTML = dashboardHtml; } else { content.innerHTML = '<p class="text-center text-danger">Gagal memuat data.</p>'; } } catch(e) { UI.toast('Gagal memuat dashboard', 'error'); content.innerHTML = '<p class="text-center text-danger">Terjadi kesalahan.</p>'; } },
             populateStudentList: function() { const filterJenjang = document.getElementById('kurFilterJenjang').value; const filteredStudents = filterJenjang ? this.allStudents.filter(s => s.jenjang === filterJenjang) : this.allStudents; const sel = document.getElementById('kurStudentSelect'); const prevValue = sel.value; sel.innerHTML = '<option value="">-- Pilih Siswa --</option>'; filteredStudents.forEach(s => { const jenjang = s.jenjang || "Umum"; const selected = s.nama === prevValue ? 'selected' : ''; sel.innerHTML += `<option value="${s.nama}" data-jenjang="${jenjang}" ${selected}>${s.nama} (${s.kelompok || '-'})</option>`; }); if (prevValue && !filteredStudents.some(s => s.nama === prevValue)) document.getElementById('kurContent').classList.add('hidden'); },
-            loadStudentDetail: async function() { const select = document.getElementById('kurStudentSelect'); const selectedName = select.value; const content = document.getElementById('kurContent'); if(!selectedName) { content.classList.add('hidden'); return; } content.classList.remove('hidden'); UI.loader(true); try { const selectedOption = select.options[select.selectedIndex]; const jenjang = selectedOption.getAttribute('data-jenjang'); document.getElementById('kurStudentNameDisplay').innerText = selectedName; document.getElementById('kurJenjangDisplay').innerText = jenjang; const curriculumData = this.config[jenjang]; if(!curriculumData) { const area = document.getElementById('kurChecklistArea'); area.innerHTML = `<div class="text-center p-4 rounded bg-yellow-50 text-yellow-700 border border-yellow-200"><i class="fas fa-exclamation-triangle"></i> Kurikulum tidak ditemukan untuk <b>${jenjang}</b>.</div>`; this.updateProgressBar(0); UI.loader(false); return; } const pRes = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getProgress', student: selectedName, jenjang: jenjang }) }); const pJson = await pRes.json(); let savedData = {}; if(pJson.status === 'success' && pJson.data) { savedData = pJson.data.progressData || {}; } const area = document.getElementById('kurChecklistArea'); area.innerHTML = ''; let html = ''; curriculumData.forEach((cat, cIdx) => { html += `<div class="category-section"><div class="category-header">${cat.category}. ${cat.title}</div><div class="item-list">`; cat.items.forEach((item, iIdx) => { const key = `${cIdx}-${iIdx}`; const isChecked = savedData[key] ? 'checked' : ''; html += `<div class="checklist-item"><input type="checkbox" id="chk_${key}" ${isChecked} onchange="Kurikulum.updateLocalProgress()"><label for="chk_${key}" class="cursor-pointer">${item}</label></div>`; }); html += `</div></div>`; }); area.innerHTML = html; const checkboxes = area.querySelectorAll('input[type="checkbox"]'); const total = checkboxes.length; const checked = area.querySelectorAll('input[type="checkbox"]:checked').length; this.updateProgressUI(checked, total); } catch(e) { UI.toast('Gagal muat progress siswa', 'error'); } finally { UI.loader(false); } },
+            loadStudentDetail: async function() { const select = document.getElementById('kurStudentSelect'); const selectedName = select.value; const content = document.getElementById('kurContent'); if(!selectedName) { content.classList.add('hidden'); return; } content.classList.remove('hidden'); UI.loader(true); try { const selectedOption = select.options[select.selectedIndex]; const jenjang = selectedOption.getAttribute('data-jenjang'); document.getElementById('kurStudentNameDisplay').innerText = selectedName; document.getElementById('kurJenjangDisplay').innerText = jenjang; const curriculumData = this.config[jenjang]; if(!curriculumData) { const area = document.getElementById('kurChecklistArea'); area.innerHTML = `<div class="text-center p-4 rounded bg-yellow-50 text-yellow-700 border border border-yellow-200"><i class="fas fa-exclamation-triangle"></i> Kurikulum tidak ditemukan untuk <b>${jenjang}</b>.</div>`; this.updateProgressBar(0); UI.loader(false); return; }
             updateLocalProgress: function() { const checkboxes = document.querySelectorAll('#kurChecklistArea input[type="checkbox"]'); const total = checkboxes.length; const checked = document.querySelectorAll('#kurChecklistArea input[type="checkbox"]:checked').length; this.updateProgressUI(checked, total); },
             updateProgressUI: function(checked, total) { const pct = total > 0 ? Math.round((checked/total)*100) : 0; document.getElementById('kurPercent').innerText = pct + "%"; document.getElementById('kurBar').style.width = pct + "%"; },
-            save: async function() { const selectedName = document.getElementById('kurStudentSelect').value; const selectedOption = document.getElementById('kurStudentSelect').options[document.getElementById('kurStudentSelect').selectedIndex]; const jenjang = selectedOption.getAttribute('data-jenjang'); if(!selectedName) return UI.toast('Pilih siswa terlebih dahulu', 'error'); const checkboxes = document.querySelectorAll('#kurChecklistArea input[type="checkbox"]'); const progressData = {}; checkboxes.forEach(cb => { const key = cb.id.replace('chk_', ''); progressData[key] = cb.checked; }); UI.loader(true); try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'saveProgress', student: selectedName, jenjang: jenjang, progressData: progressData }) }); UI.toast('Progress tersimpan'); } catch(e) { UI.toast('Gagal simpan', 'error'); } finally { UI.loader(false); } }
+            save: async function() { const selectedName = document.getElementById('kurStudentSelect').value; const selectedOption = document.getElementById('kurStudentSelect').options[document.getElementById('kurStudentSelect').selectedIndex]; const jenjang = selectedOption.getAttribute('data-jenjang'); if(!selectedName) return UI.toast('Pilih siswa terlebih dahulu', 'error'); const checkboxes = document.querySelectorAll('#kurChecklistArea input[type="checkbox" id="chk_` + key + "']"); const progressData = {}; checkboxes.forEach(cb => { const key = cb.id.replace('chk_', ''); progressData[key] = cb.checked; }); UI.loader(true); try { await fetch(API_URL, { method: 'post', body: JSON.stringify({ action: 'saveProgress', student: selectedName, jenjang: jenjang, progressData: progressData }) }); UI.toast('Progress tersimpan'); } catch(e) { UI.toast('Gagal simpan', 'error'); } finally { UI.loader(false); } }
         };
 
         // ==========================================
@@ -343,13 +347,11 @@
                         sel.innerHTML += `<option value="${s.nama}">${s.nama} - ${s.jenjang}</option>`;
                     });
                 } else if (currentUser.role === 'daerah' || currentUser.role === 'desa') {
-                    // Tampilkan Tab Leger, Sembunyikan Input Rapot
                     tabLeger.classList.remove('hidden');
                     formArea.classList.add('hidden');
                     msgOnly.classList.remove('hidden');
                     
-                    // FIX: PASTIKAN DATA GENERUS TERLOAD UNTUK FILTER DESA
-                    // Jika data belum ada (misal user langsung buka menu ini), fetch dulu.
+                    // FIX: PASTIKAN DATA GENERUS UNTUK FILTER DESA
                     if(Generus.allData.length === 0) {
                         try {
                             const gRes = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getData', role: currentUser.role, lokasi: currentUser.lokasi }) });
@@ -369,7 +371,7 @@
 
             switchTab: function(tab, btn) {
                 document.querySelectorAll('#mod-rapot .tab-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
+                if(btn) btn.classList.add('active');
 
                 if(tab === 'input') {
                     document.getElementById('rapot-input-view').classList.remove('hidden');
@@ -504,7 +506,7 @@
                         body: bioData,
                         theme: 'plain',
                         styles: { fontSize: 11, cellPadding: 2 },
-                        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40 } }
+                        columnStyles: { 0: { fontStyle: bold, cellWidth: 40px; } }
                     });
 
                     // Tabel Nilai (No, Materi, Nilai)
@@ -522,7 +524,7 @@
                         const grade = grades[tit];
                         const score = scoreMap[grade] || 0;
                         totalScore += score;
-                        tableBody.push([index + 1, tit, grade]); // Format: No, Materi, Nilai
+                        tableBody.push([index + 1, tit, grade]);
                     });
 
                     const avgScore = titles.length > 0 ? (totalScore / titles.length) : 0;
@@ -534,13 +536,12 @@
                         body: tableBody,
                         theme: 'grid',
                         headStyles: { fillColor: [16, 185, 129] },
-                        columnStyles: { 0: { cellWidth: 15 }, 2: { cellWidth: 30, halign: 'center' } }
+                        columnStyles: { 0: { cellWidth: 15 }, 2: { cellWidth: 30px; halign: 'center' } }
                     });
 
                     // Tulis "Nilai Akhir" di bawah tabel
                     const finalY = doc.lastAutoTable.finalY + 10;
-                    doc.setFontSize(11);
-                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(11); doc.setFont("helvetica", "bold");
                     doc.text(`Nilai Akhir : ${finalGrade}`, 14, finalY);
 
                     // Tabel Kehadiran (Dibawah Nilai Akhir)
@@ -578,10 +579,8 @@
                     // Catatan Guru
                     doc.text("Catatan Guru", 14, doc.lastAutoTable.finalY + 15);
                     doc.setDrawColor(0);
-                    doc.rect(14, doc.lastAutoTable.finalY + 20, 180, 30); // Kotak catatan
-                    doc.setFontSize(10);
-                    doc.setFont("helvetica", "normal");
-                    doc.text(catatan, 16, doc.lastAutoTable.finalY + 25, { maxWidth: 176 });
+                    doc.rect(14, doc.lastAutoTable.finalY + 20, 180, 30px; doc.setFontSize: 10; font-family: sans-serif; font-size: normal; font-size: 0.8rem; font-size: 0.8rem;">
+                    doc.text(catatan, 16, doc.lastAutoTable.finalY + 25, { maxWidth: 176px; });
 
                     // Tanda Tangan
                     doc.setFontSize(10);
@@ -596,13 +595,13 @@
                     doc.text("Guru", 130, sigY + 5);
                     doc.line(130, sigY + 15, 180, sigY + 15);
 
-                    // --- HALAMAN 2: KURIKULUM (Jika ingin tetap ada) ---
+                    // --- HALAMAN 2: KURIKULUMUM (Jika ingin tetap ada) ---
                     doc.addPage();
                     doc.setFontSize(16);
                     doc.setFont("helvetica", "bold");
                     doc.text("Rincian Pencapaian Materi", 105, 20, { align: "center" });
                     doc.setFontSize(11);
-                    doc.text(`Nama: ${student.nama}`, 14, 30);
+                    doc.text(`Nama: ${student.nama}`, 14, 30px);
 
                     const pRes = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getProgress', student: nama, jenjang: student.jenjang }) });
                     const pJson = await pRes.json();
@@ -615,7 +614,7 @@
                         // Loop kurikulum yang ada di currentCurriculum
                         (this.currentCurriculum || []).forEach((cat, cIdx) => {
                             // Header Kategori
-                            kurBody.push([{ content: cat.title, colSpan: 3, styles: { fillColor: [200, 200, 200], fontStyle: 'bold' } }]); 
+                            kurBody.push([{ content: cat.title, colSpan: 3, styles: { fillColor: [200, 200, 200, 200, 200, fontStyle: bold; } }]); 
                             
                             // Item Materi
                             cat.items.forEach((item, iIdx) => {
@@ -627,10 +626,11 @@
                         
                         doc.autoTable({
                             startY: 40,
-                            head: [['No', 'Materi', {content: 'Status', styles: {halign: 'center'}}]],
+                            head: [['No', 'Materi', {content: 'Status', styles: {halign: 'center',halign: 'center'} }],
                             body: kurBody,
                             theme: 'grid',
-                            columnStyles: { 0: { cellWidth: 15 }, 2: { cellWidth: 40 } }
+                            columnStyles: { 0: { cellWidth: 15 }, 2: { cellWidth: 40px; } },
+                            columnStyles: { 0: { cellWidth: 15 }, 2: { cellWidth: 40px; } }
                         });
                     }
 
@@ -697,7 +697,7 @@
                     }
                     // Jika kosong ("Semua Desa"), biarkan filteredData tetap semua data (atau filter berdasarkan lokasi daerah saja)
                     else {
-                        filteredData = Generus.allData.filter(d => d.desa); // Pastikan hanya yang punya desa
+                        filteredData = Generus.allData.filter(d => d.desa); 
                     }
                 } 
                 // Logika Jika Akun Desa:
@@ -838,9 +838,10 @@
                 const ws = XLSX.utils.aoa_to_sheet(sheetData);
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, "Leger Nilai");
-                XLSX.writeFile(wb, `Leger_Nilai_${currentUser.lokasi}_${new Date().toISOString().slice(0,10)}.xlsx`);
+                XLSX.writeFile(wb, `Leger_Nilai_${currentUser.lokasi}_${new Date().toISOString().slice(0,10)}.xlsx`); // Ganti nama file Excel
             }
         };
+
         // ==========================================
         // MODULE JADWAL KBM (FIXED EDIT LOGIC & NEW STRUCTURE)
         // ==========================================
@@ -864,7 +865,7 @@
 
                 if(Generus.allData.length === 0) {
                     try {
-                        const gRes = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getData', role: currentUser.role, lokasi: currentUser.lokasi }) });
+                        const gRes = await fetch(API_URL, { method: 'post', body: json.stringify({ action: 'getData', role: currentUser.role, lokasi: currentUser.lokasi }) });
                         const gJson = await gRes.json();
                         Generus.allData = gJson.data || [];
                     } catch(e) { console.error("Gagal load data generus", e); }
@@ -898,7 +899,7 @@
             loadData: async function() {
                 UI.loader(true);
                 try {
-                    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ 
+                    const res = await fetch(API_URL, { method: 'post', body: json.stringify({ 
                         action: 'getJadwal', 
                         role: currentUser.role, 
                         lokasi: currentUser.lokasi,
@@ -908,8 +909,6 @@
                     
                     if(json.status === 'success') {
                         this.rawData = json.data || [];
-                        // DEBUG: Cek data masuk atau tidak
-                        console.log("Data Jadwal masuk:", this.rawData.length); 
                         this.populateAllFilters(); 
                         this.applyFilters();
                     }
@@ -965,7 +964,7 @@
                 if(kelVal) filtered = filtered.filter(d => d.kelompok === kelVal);
                 if(tempatVal) filtered = filtered.filter(d => d.tempat === tempatVal);
 
-                this.displayData = filtered;
+                this.displayData = filteredData;
                 this.renderTable(this.displayData);
             },
 
@@ -1002,6 +1001,7 @@
                 });
 
                 const actionEls = document.querySelectorAll('.action-col-jadwal');
+                
                 if (currentUser.role === 'kelompok') {
                     actionEls.forEach(el => el.style.display = 'table-cell');
                 } else {
@@ -1033,7 +1033,7 @@
                     // Jika TIDAK DITEMUKAN
                     if (!item) {
                         console.warn("Data ID", searchId, "tidak ditemukan di rawData!");
-                        alert("PERINGATAN: Data jadwal tidak ditemukan di memori.\n\nKemungkinan ada perubahan data (hapus/ubah) yang belum disinkronkan.\n\nSilakan refresh halaman (tekan F5) lalu coba lagi.");
+                        alert("PERINGATAN: Data jadwal tidak ditemukan di memori. Silakan refresh halaman (tekan F5) lalu coba lagi.");
                         return;
                     }
 
@@ -1124,16 +1124,11 @@
                 }));
 
                 const ws = XLSX.utils.json_to_sheet(cleanData);
-                const wscols = [
-                    {wch:15}, {wch:10}, {wch:20}, {wch:15}, {wch:20}, {wch:15}, {wch:20}, {wch:20}
-                ];
-                ws['!cols'] = wscols;
-
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, "Jadwal KBM");
-                XLSX.writeFile(wb, `Jadwal_KBM_${currentUser.lokasi}_${new Date().toISOString().slice(0,10)}.xlsx`);
-            }
+                XLSX.writeFile(wb, `Jadwal_KBM_${currentUser.lokasi}_${new Date().toISOString().slice(0,10)}.xlsx`); }
         };
+        
         // ==========================================
         // INIT APP
         // ==========================================
