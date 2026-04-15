@@ -1,3 +1,1011 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ruang Kurikulum</title>
+    
+    <!-- PWA CONFIGURATION -->
+    <meta name="theme-color" content="#10b981">
+    <meta name="msapplication-TileColor" content="#10b981">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Ruang Kurikulum">
+    <link rel="apple-touch-icon" href="https://placehold.co/192x192/10b981/ffffff?text=RK">
+    
+    <script type="application/manifest+json">
+    {
+      "name": "Ruang Kurikulum",
+      "short_name": "RuangKurikulum",
+      "start_url": ".",
+      "display": "standalone",
+      "background_color": "#f8fafc",
+      "theme_color": "#10b981",
+      "orientation": "portrait",
+      "icons": [
+        { "src": "https://placehold.co/192x192/10b981/ffffff?text=RK", "sizes": "192x192", "type": "image/png" },
+        { "src": "https://placehold.co/512x512/10b981/ffffff?text=RK", "sizes": "512x512", "type": "image/png" }
+      ]
+    }
+    </script>
+
+    <!-- Fonts & Libraries -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --primary-light: #ecfdf5;
+            --primary-subtle: #d1fae5;
+            --bg-body: #f8fafc;
+            --bg-surface: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --danger-bg: #fef2f2;
+            --warning: #f59e0b;
+            --warning-bg: #fffbeb;
+            --info: #3b82f6;
+            --info-bg: #eff6ff;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --sidebar-width: 260px;
+            --header-height: 70px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-body); color: var(--text-main); min-height: 100vh; overflow-x: hidden; font-size: 14px; }
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 8px; } .gap-4 { gap: 16px; }
+        .text-sm { font-size: 0.85rem; } .text-xs { font-size: 0.75rem; }
+        .font-bold { font-weight: 700; } .font-medium { font-weight: 500; }
+        .text-primary { color: var(--primary); } .text-muted { color: var(--text-muted); }
+
+        /* Buttons */
+        .btn { padding: 10px 20px; border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; line-height: 1; }
+        .btn-primary { background-color: var(--primary); color: white; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2); }
+        .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
+        .btn-secondary { background-color: white; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-secondary:hover { background-color: var(--bg-body); border-color: #cbd5e1; }
+        .btn-danger { background-color: var(--danger-bg); color: var(--danger); border: 1px solid transparent; }
+        .btn-danger:hover { background-color: #fee2e2; border-color: #fecaca; }
+        .btn-sm { padding: 6px 14px; font-size: 0.8rem; }
+        .btn-block { width: 100%; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        /* Forms */
+        .form-group { margin-bottom: 16px; text-align: left; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
+        .form-control { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; background: white; transition: 0.2s; color: var(--text-main); }
+        .form-control:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px var(--primary-light); }
+        select.form-control { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; appearance: none; }
+
+        /* Login Screen */
+        #login-view { position: fixed; inset: 0; background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; transition: opacity 0.5s ease; }
+        #login-view.fade-out { opacity: 0; pointer-events: none; }
+        .login-card { background: white; width: 100%; max-width: 400px; padding: 40px; border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); text-align: center; }
+        .login-logo { width: 70px; height: 70px; background: var(--primary-light); color: var(--primary); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 20px; }
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+
+        /* App Layout */
+        #app-layout { display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar { width: var(--sidebar-width); background: white; border-right: 1px solid var(--border); position: fixed; height: 100%; z-index: 100; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; left: 0; }
+        .sidebar-header { height: var(--header-height); display: flex; align-items: center; padding: 0 24px; border-bottom: 1px solid var(--border); }
+        .brand { font-size: 1.25rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        
+        .nav-links { flex: 1; padding: 24px 16px; overflow-y: auto; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: var(--text-muted); border-radius: var(--radius-sm); margin-bottom: 4px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .nav-item:hover { background-color: var(--bg-body); color: var(--text-main); }
+        .nav-item.active { background-color: var(--primary-light); color: var(--primary-hover); font-weight: 600; }
+        .nav-item i { width: 20px; text-align: center; font-size: 1.1rem; }
+        
+        .user-profile { padding: 16px; border-top: 1px solid var(--border); background: var(--bg-body); }
+        .user-info { font-weight: 600; color: var(--text-main); font-size: 0.9rem; }
+        .user-role { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px; }
+
+        /* Main Content */
+        .main-content { flex: 1; margin-left: var(--sidebar-width); padding: 32px; width: calc(100% - var(--sidebar-width)); transition: margin 0.3s; }
+        .mobile-toggle { display: none; position: fixed; top: 15px; left: 15px; z-index: 101; background: white; padding: 10px; border-radius: 50%; box-shadow: var(--shadow-md); border: 1px solid var(--border); color: var(--text-main); cursor: pointer; }
+
+        /* Components */
+        .section-header { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .page-title { font-size: 1.5rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 12px; }
+        
+        /* Stats Cards */
+        .stat-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 32px; }
+        .stat-card { background: var(--bg-surface); padding: 24px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); transition: transform 0.2s; position: relative; overflow: hidden; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .stat-card h4 { margin: 0 0 8px 0; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card .big-num { font-size: 2rem; font-weight: 700; color: var(--text-main); }
+        
+        /* Custom Bar Chart CSS */
+        .stat-bar-item { margin-bottom: 12px; }
+        .sb-label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px; }
+        .sb-bg { background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; }
+        .sb-fill { background: var(--primary); height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+
+        /* Filters */
+        .filter-bar { background: var(--bg-surface); padding: 16px; border-radius: var(--radius); box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 24px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+        .search-box { flex: 1; min-width: 250px; position: relative; }
+        .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .search-box input { padding-left: 38px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg-body); }
+
+        /* Tables */
+        .table-card { background: var(--bg-surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th, td { padding: 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; vertical-align: middle; }
+        th { background: #f8fafc; font-weight: 600; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: #fcfcfc; }
+        
+        /* Tabs */
+        .tabs-wrapper { display: inline-flex; background: #f1f5f9; padding: 4px; border-radius: var(--radius); }
+        .tab-btn { padding: 8px 16px; border-radius: 6px; border: none; background: transparent; color: var(--text-muted); font-weight: 500; font-size: 0.9rem; cursor: pointer; transition: 0.2s; }
+        .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+        /* Badges */
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: capitalize; display: inline-block; }
+        .badge-H { background: var(--primary-subtle); color: var(--primary-hover); }
+        .badge-S { background: var(--warning-bg); color: var(--warning); }
+        .badge-I { background: var(--info-bg); color: var(--info); }
+        .badge-A { background: var(--danger-bg); color: var(--danger); }
+        
+        /* Status Guru Badges */
+        .badge-MT { background: #fef3c7; color: #d97706; }
+        .badge-MS { background: #dbeafe; color: #2563eb; }
+        .badge-GB { background: #f3e8ff; color: #9333ea; }
+        .badge-YA { background: var(--primary-subtle); color: var(--primary-hover); }
+        .badge-TIDAK { background: #fee2e2; color: #dc2626; }
+
+        /* Cards */
+        .history-card { background: var(--bg-surface); padding: 20px; border-radius: var(--radius); margin-bottom: 16px; border: 1px solid var(--border); transition: 0.2s; }
+        .history-card:hover { border-color: var(--primary-subtle); box-shadow: var(--shadow-md); }
+
+        /* Checklist */
+        .category-section { margin-bottom: 20px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+        .category-header { background: var(--primary-light); color: var(--primary-hover); padding: 12px 16px; font-weight: 600; font-size: 0.95rem; border-bottom: 1px solid var(--border); }
+        .item-list { padding: 16px; background: white; }
+        .checklist-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--border); }
+        .checklist-item:last-child { border-bottom: none; }
+        .checklist-item input { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
+        .checklist-item input:checked + label { text-decoration: line-through; color: var(--text-muted); }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 500; inset: 0; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
+        .modal.show { display: flex; opacity: 1; }
+        .modal-content { background-color: white; padding: 32px; border-radius: 16px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; transform: translateY(20px); transition: transform 0.3s; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .modal.show .modal-content { transform: translateY(0); }
+        .modal-lg { max-width: 800px; }
+
+        /* Toast & Loader */
+        #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: #1e293b; color: white; padding: 12px 20px; border-radius: var(--radius-sm); font-size: 0.9rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); animation: slideIn 0.3s ease; display: flex; align-items: center; gap: 10px; }
+        .toast.success { background: var(--primary); } .toast.error { background: var(--danger); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .loader-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 40px; height: 40px; border: 3px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Pagination */
+        .pagination-container { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 24px; padding: 16px; background: white; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+        .page-btn { padding: 8px 16px; background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; color: var(--text-main); font-weight: 500; transition: 0.2s; }
+        .page-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+        .page-btn:disabled { opacity: 0.5; cursor: not-allowed; background: #f1f5f9; }
+        .page-ellipsis { padding: 0 8px; color: var(--text-muted); }
+
+        /* --- RAPOT & PRINT STYLES --- */
+        .rapot-grade-row { display: flex; gap: 10px; margin-bottom: 8px; align-items: center; }
+        .rapot-grade-row input[type="text"] { flex: 2; background: #f1f5f9; border:none; color: #64748b; }
+        .rapot-grade-row select { flex: 1; }
+        
+        /* PRINT STYLES (Professional Layout) */
+        @media print {
+            @page { margin: 0; size: A4; }
+            body { background: white; -webkit-print-color-adjust: exact; }
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; box-sizing: border-box; }
+            
+            .print-page { 
+                position: relative; 
+                page-break-after: always; 
+                padding: 0; 
+                border: none !important;
+                font-family: 'Times New Roman', Times, serif;
+                color: black;
+                background: white !important;
+                box-shadow: none !important;
+                margin-bottom: 0;
+            }
+            .print-page:last-child { page-break-after: auto; }
+
+            .print-header { text-align: center; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 30px; }
+            .print-header h2 { margin: 0; font-size: 18pt; text-transform: uppercase; letter-spacing: 1px; }
+            .print-header p { margin: 5px 0 0 0; font-size: 11pt; }
+            
+            .print-section { margin-bottom: 25px; }
+            .print-section h4 { 
+                background: #eee !important; 
+                color: black !important;
+                padding: 8px; 
+                font-size: 12pt; 
+                border: 1px solid black; 
+                margin-bottom: 10px; 
+                font-family: 'Times New Roman', serif;
+                font-weight: bold;
+            }
+            
+            .print-table { width: 100%; border-collapse: collapse; font-size: 11pt; margin-bottom: 15px; }
+            .print-table th, .print-table td { border: 1px solid black; padding: 8px; text-align: left; color: black; }
+            .print-table th { background: #f0f0f0 !important; font-weight: bold; }
+            
+            .signature-box { display: flex; justify-content: space-between; margin-top: 60px; page-break-inside: avoid; }
+            .sig-col { text-align: center; width: 45%; }
+            .sig-space { height: 80px; }
+            
+            /* Hide UI elements */
+            .no-print { display: none !important; }
+        }
+
+        /* Screen preview of print area */
+        #print-area { background: white; padding: 20px; margin-top: 20px; border: 1px solid #ddd; display: none; }
+        .preview-mode #print-area { display: block; }
+        
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); box-shadow: var(--shadow-md); } .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; width: 100%; padding: 24px 16px; padding-top: 70px; }
+            .mobile-toggle { display: flex; align-items: center; justify-content: center; }
+            .stat-cards-grid { grid-template-columns: 1fr; }
+            .filter-bar { flex-direction: column; align-items: stretch; }
+            .search-box { width: 100%; }
+        }
+        /* --- CARD BANTUAN DI SIDEBAR (DESAIN BARU) --- */
+.sidebar-support-card {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Jarak antara icon dan teks */
+    padding: 12px 16px;
+    margin: 12px 16px; /* Jarak dari atas/bawah/kiri/kanan sidebar */
+    
+    /* Warna Background Hijau Muda (Soft Green) */
+    background-color: #dcfce7; 
+    /* Warna Teks Hijau Tua */
+    color: #15803d; 
+    
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    cursor: pointer;
+}
+
+/* Efek saat Mouse Disorot (Hover) */
+.sidebar-support-card:hover {
+    background-color: #22c55e; /* Berubah jadi Hijau Solid */
+    color: white; /* Teks jadi putih */
+    transform: translateY(-2px); /* Sedikit naik ke atas */
+    box-shadow: 0 4px 6px rgba(34, 197, 94, 0.2); /* Bayangan hijau */
+    text-decoration: none;
+}
+
+.sidebar-support-card i {
+    font-size: 1.1rem; /* Ukuran icon sedikit lebih besar */
+}
+    </style>
+</head>
+<body>
+
+    <div id="globalLoader" class="loader-overlay hidden"><div class="spinner"></div><p style="margin-top:16px; font-weight:600; color: var(--text-main);">Memuat Data...</p></div>
+    <div id="toast-container"></div>
+
+    <!-- LOGIN VIEW -->
+    <div id="login-view">
+        <div class="login-card" id="loginCard">
+            <div class="login-logo"><i class="fas fa-shapes"></i></div>
+            <h2 style="margin-bottom: 8px; color: var(--text-main);">Ruang Kurikulum</h2>
+            <p style="color:var(--text-muted); margin-bottom: 24px; font-size:0.9rem;">Masuk untuk mengelola data</p>
+            
+            <div id="loginMsg" style="color:var(--danger); font-size:0.85rem; text-align:center; margin-bottom:15px; min-height:20px; font-weight:500; background:var(--danger-bg); padding:10px; border-radius:8px; border:1px solid #fecaca; display:none;"></div>
+            
+            <form onsubmit="event.preventDefault(); Auth.login();">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="u" class="form-control" required placeholder="Masukkan username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="p" class="form-control" required placeholder="Masukkan password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" id="btnLogin">
+                    <i class="fas fa-sign-in-alt"></i> <span>Masuk Aplikasi</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- APP LAYOUT -->
+    <div id="app-layout" class="hidden">
+        <button class="mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="brand"><i class="fas fa-shapes"></i> RUANG KURIKULUM</div>
+            </div>
+            <div class="nav-links">
+                <a class="nav-item active" onclick="App.switchModule('generus', this)"><i class="fas fa-users"></i> Data Generus</a>
+                <a class="nav-item" onclick="App.switchModule('guru', this)"><i class="fas fa-chalkboard-teacher"></i> Data Guru</a>
+                <a class="nav-item" onclick="App.switchModule('jurnal', this)"><i class="fas fa-book-open"></i> Jurnal Pengajian</a>
+                <a class="nav-item" onclick="App.switchModule('kurikulum', this)"><i class="fas fa-chart-pie"></i> Monitoring Kurikulum</a>
+                <div style="height:1px; background:#e2e8f0; margin:10px 0;"></div>
+                <a class="nav-item" onclick="App.switchModule('rapot', this)"><i class="fas fa-print"></i> Cetak Rapot</a>
+                <a class="nav-item" onclick="App.switchModule('jadwal', this)"><i class="fas fa-calendar-alt"></i> Jadwal KBM</a>
+            </div>
+<a href="https://wa.me/6285793715450?text=Assalamualaikum%20Pak%2C%20saya%20butuh%20bantuan%20di%20aplikasi%20Ruang%20Kurikulum" 
+   target="_blank" 
+   class="sidebar-support-card">
+    <i class="fab fa-whatsapp"></i>
+    <div>
+        <div style="font-size: 0.75rem; font-weight: 500; opacity: 0.9;">Butuh Bantuan ?</div>
+        <div style="font-size: 0.85rem; font-weight: 700;">Hubungi Kami</div>
+    </div>
+</a>
+            <div class="user-profile">
+                <div class="user-info" id="sidebarUserName">User Name</div>
+                <div class="user-role" id="sidebarUserRole">Role</div>
+                <button class="btn btn-danger btn-sm btn-block" onclick="Auth.logout()"><i class="fas fa-power-off"></i> Keluar</button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            
+            <!-- MODULE 1: GENERUS -->
+            <section id="mod-generus">
+                <div class="section-header">
+                    <h2 class="page-title"><i class="fas fa-users text-primary"></i> Data Generus</h2>
+                    <button class="btn btn-secondary btn-sm" onclick="Generus.downloadExcel()"><i class="fas fa-file-excel" style="color: #107c41;"></i> Download Data Generus</button>
+                </div>
+
+                <div class="dashboard-stats">
+                    <div class="stat-cards-grid">
+                        <div class="stat-card"><h4>Total Generus</h4><div class="big-num" id="statTotal">0</div></div>
+                        <div class="stat-card"><h4>Laki-laki</h4><div class="big-num" id="statL">0</div></div>
+                        <div class="stat-card"><h4>Perempuan</h4><div class="big-num" id="statP">0</div></div>
+                    </div>
+                    <!-- CHARTS RESTORED -->
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                        <div class="stat-card"><h4 style="margin-bottom:16px;">Distribusi Kelas</h4><div id="chartKelas"></div></div>
+                        <div class="stat-card"><h4 style="margin-bottom:16px;">Distribusi Jenjang</h4><div id="chartJenjang"></div></div>
+                        <div class="stat-card" id="cardGroupStats"><h4 id="titleGroupStats" style="margin-bottom:16px;">Statistik Wilayah</h4><div id="chartGrouping"></div></div>
+                    </div>
+                </div>
+
+                <div class="filter-bar">
+                    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="genSearch" placeholder="Cari nama..." onkeyup="Generus.applyFilters()"></div>
+                    <select id="filterDesa" class="form-control hidden" style="width:180px;" onchange="Generus.applyFilters()"><option value="">Semua Desa</option></select>
+                    <select id="filterKelompok" class="form-control hidden" style="width:180px;" onchange="Generus.applyFilters()"><option value="">Semua Kelompok</option></select>
+                    <select id="filterJenjang" class="form-control" style="width:140px;" onchange="Generus.applyFilters()"><option value="">Semua Jenjang</option><option value="PAUD">PAUD</option><option value="CABERAWIT">CABERAWIT</option><option value="PRA REMAJA">PRA REMAJA</option><option value="REMAJA">REMAJA</option><option value="PRA NIKAH">PRA NIKAH</option></select>
+                    <select id="filterJK" class="form-control" style="width:120px;" onchange="Generus.applyFilters()"><option value="">Semua JK</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select>
+                    <button class="btn btn-primary" onclick="Generus.openModal()" id="btnAddGen"><i class="fas fa-plus"></i> Tambah</button>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-responsive">
+                        <table id="genTable">
+                            <thead>
+                                <tr>
+                                    <th width="50">No</th>
+                                    <th>Nama Lengkap</th>
+                                    <th width="60">L/P</th>
+                                    <th width="60">Umur</th>
+                                    <th>Kelas</th>
+                                    <th>Jenjang</th>
+                                    <th>Lokasi</th>
+                                    <th width="100" class="action-col">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="genTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="pagination-container hidden" id="genPagination"></div>
+            </section>
+
+            <!-- MODULE 2: DATA GURU -->
+            <section id="mod-guru" class="hidden">
+                <div class="section-header">
+                    <h2 class="page-title"><i class="fas fa-chalkboard-teacher text-primary"></i> Data Guru</h2>
+                    <button class="btn btn-secondary btn-sm" onclick="Guru.downloadExcel()"><i class="fas fa-file-excel" style="color: #107c41;"></i> Download Data Guru</button>
+                </div>
+
+                <div class="dashboard-stats">
+                    <div class="stat-cards-grid">
+                        <div class="stat-card"><h4>Total Guru</h4><div class="big-num" id="statGuruTotal">0</div></div>
+                        <div class="stat-card"><h4>Guru Laki-laki</h4><div class="big-num" id="statGuruL">0</div></div>
+                        <div class="stat-card"><h4>Guru Perempuan</h4><div class="big-num" id="statGuruP">0</div></div>
+                    </div>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                        <div class="stat-card"><h4 style="margin-bottom:16px;">Distribusi Status</h4><div id="chartGuruStatus"></div></div>
+                        <div class="stat-card"><h4 style="margin-bottom:16px;">Mengajar Generus</h4><div id="chartGuruMengajar"></div></div>
+                    </div>
+                </div>
+
+                <div class="filter-bar">
+                    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="guruSearch" placeholder="Cari nama guru..." onkeyup="Guru.applyFilters()"></div>
+                    <select id="filterGuruStatus" class="form-control" style="width:140px;" onchange="Guru.applyFilters()">
+                        <option value="">Semua Status</option>
+                        <option value="MT">MT</option>
+                        <option value="MS">MS</option>
+                        <option value="Guru Bantu">Guru Bantu</option>
+                    </select>
+                    <select id="filterGuruJK" class="form-control" style="width:120px;" onchange="Guru.applyFilters()">
+                        <option value="">Semua JK</option>
+                        <option value="L">Laki-laki</option>
+                        <option value="P">Perempuan</option>
+                    </select>
+                    <select id="filterGuruMengajar" class="form-control" style="width:140px;" onchange="Guru.applyFilters()">
+                        <option value="">Semua Status Mengajar</option>
+                        <option value="YA">YA</option>
+                        <option value="TIDAK">TIDAK</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="Guru.openModal()" id="btnAddGuru"><i class="fas fa-plus"></i> Tambah</button>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-responsive">
+                        <table id="guruTable">
+                            <thead>
+                                <tr>
+                                    <th width="50">No</th>
+                                    <th>Nama Lengkap</th>
+                                    <th width="60">L/P</th>
+                                    <th width="100">Status</th>
+                                    <th>Nomor HP</th>
+                                    <th width="100">Mengajar</th>
+                                    <th>Lokasi</th>
+                                    <th width="100" class="action-col-guru">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="guruTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="pagination-container hidden" id="guruPagination"></div>
+            </section>
+
+            <!-- MODULE 3: JURNAL -->
+            <section id="mod-jurnal" class="hidden">
+                <div class="section-header">
+                    <h2 class="page-title"><i class="fas fa-book-open text-primary"></i> Jurnal Pengajian</h2>
+                    <div class="tabs-wrapper">
+                        <button class="tab-btn active" onclick="Jurnal.switchTab('input', this)" id="tabBtnInput">Input</button>
+                        <button class="tab-btn" onclick="Jurnal.switchTab('history', this)" id="tabBtnHistory">Riwayat</button>
+                        <button class="tab-btn" onclick="Jurnal.switchTab('stats', this)" id="tabBtnStats">Statistik</button>
+                    </div>
+                </div>
+
+                <div id="jurnal-input-view">
+                    <div class="stat-card" style="max-width: 600px; margin: 0 auto 24px auto;">
+                        <div class="form-group">
+                            <label>Pilih Jenjang</label>
+                            <select id="jurnJenjang" class="form-control" onchange="Jurnal.loadMembers()">
+                                <option value="">-- Pilih Jenjang --</option>
+                                <option value="PAUD">PAUD</option>
+                                <option value="Caberawit">Caberawit</option>
+                                <option value="Pra Remaja">Pra Remaja</option>
+                                <option value="Remaja">Remaja</option>
+                                <option value="Pra Nikah">Pra Nikah</option>
+                            </select>
+                        </div>
+                        <div id="jurnalFormArea" class="hidden">
+                            <div class="form-group">
+                                <label>Tanggal</label>
+                                <input type="date" id="jurnDate" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Materi Pengajian</label>
+                                <textarea id="jurnMateri" class="form-control" rows="3" placeholder="Ringkasan materi..."></textarea>
+                            </div>
+                            <label class="font-bold" style="display:block; margin-bottom:12px;">Daftar Hadir:</label>
+                            <div id="jurnMemberList" style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 16px;"></div>
+                            <button class="btn btn-primary btn-block" onclick="Jurnal.save()"><i class="fas fa-save"></i> Simpan Jurnal</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="jurnal-history-view" class="hidden">
+                    <div class="filter-bar">
+                        <div class="flex gap-4" style="flex-wrap:wrap;">
+                            <div><label class="text-xs font-bold text-muted">Dari</label><input type="date" id="histStart" class="form-control" style="width:140px;" onchange="Jurnal.loadHistory()"></div>
+                            <div><label class="text-xs font-bold text-muted">Sampai</label><input type="date" id="histEnd" class="form-control" style="width:140px;" onchange="Jurnal.loadHistory()"></div>
+                            <div><label class="text-xs font-bold text-muted">Jenjang</label><select id="histFilterJenjang" class="form-control" style="width:140px;" onchange="Jurnal.loadHistory()"><option value="">Semua Jenjang</option><option value="PAUD">PAUD</option><option value="Caberawit">Caberawit</option><option value="Pra Remaja">Pra Remaja</option><option value="Remaja">Remaja</option><option value="Pra Nikah">Pra Nikah</option></select></div>
+                            <div id="histFilterKelompokWrapper" class="hidden"><label class="text-xs font-bold text-muted">Kelompok</label><select id="histFilterKelompok" class="form-control" style="width:160px;" onchange="Jurnal.loadHistory()"><option value="">Semua Kelompok</option></select></div>
+                        </div>
+                    </div>
+                    <div id="jurnHistoryContainer"></div>
+                    <div class="pagination-container hidden" id="historyPagination"></div>
+                </div>
+
+                <div id="jurnal-stats-view" class="hidden">
+                    <div class="stat-cards-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 24px;">
+                        <div class="stat-card">
+                            <h4>Filter Jenjang</h4>
+                            <select id="statsFilterJenjang" class="form-control" style="margin-top:8px;" onchange="Jurnal.loadStats()"><option value="">Semua Jenjang</option><option value="PAUD">PAUD</option><option value="Caberawit">Caberawit</option><option value="Pra Remaja">Pra Remaja</option><option value="Remaja">Remaja</option><option value="Pra Nikah">Pra Nikah</option></select>
+                        </div>
+                        <div class="stat-card hidden" id="statsKelompokFilterWrapper">
+                            <h4>Filter Kelompok</h4>
+                            <select id="statsFilterKelompok" class="form-control" style="margin-top:8px;" onchange="Jurnal.loadStats()"><option value="">Semua Kelompok</option></select>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Periode</h4>
+                            <div class="flex gap-2 items-center" style="margin-top:8px;">
+                                <input type="date" id="statsStart" class="form-control" style="padding:6px;" onchange="Jurnal.loadStats()">
+                                <span class="text-muted">s/d</span>
+                                <input type="date" id="statsEnd" class="form-control" style="padding:6px;" onchange="Jurnal.loadStats()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card" style="margin-bottom:24px;">
+                        <div class="flex justify-between items-center mb-4" style="margin-bottom:16px;">
+                            <h4 style="margin:0;">Tren Kehadiran (%)</h4>
+                            <div style="background:var(--primary-light); padding:6px 12px; border-radius:20px; border:1px solid var(--primary-subtle);">
+                                <span class="text-xs text-primary font-bold">Rata-rata: </span>
+                                <span id="avgAttendanceValue" class="font-bold text-primary">0%</span>
+                            </div>
+                        </div>
+                        <div style="height:300px; width:100%;"><canvas id="attendanceChart"></canvas></div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:24px;">
+                        <div class="stat-card" style="border-top: 4px solid var(--primary);">
+                            <h4 style="color:var(--primary);">Selalu Hadir (100%)</h4>
+                            <div id="listRajin" style="max-height:200px; overflow-y:auto; margin-top:12px;"></div>
+                        </div>
+                        <div class="stat-card" style="border-top: 4px solid var(--info);">
+                            <h4 style="color:var(--info);">Sering Izin (>50%)</h4>
+                            <div id="listIzin" style="max-height:200px; overflow-y:auto; margin-top:12px;"></div>
+                        </div>
+                        <div class="stat-card" style="border-top: 4px solid var(--warning);">
+                            <h4 style="color:var(--warning);">Sering Sakit (>50%)</h4>
+                            <div id="listSakit" style="max-height:200px; overflow-y:auto; margin-top:12px;"></div>
+                        </div>
+                        <div class="stat-card" style="border-top: 4px solid var(--danger);">
+                            <h4 style="color:var(--danger);">Sering Alpha (>50%)</h4>
+                            <div id="listAlpha" style="max-height:200px; overflow-y:auto; margin-top:12px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="text-right" style="margin-top:24px;">
+                        <button class="btn btn-primary" onclick="Jurnal.downloadRekap()"><i class="fas fa-file-pdf"></i> Download Laporan PDF</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODULE 4: KURIKULUM -->
+            <section id="mod-kurikulum" class="hidden">
+                <div class="section-header">
+                    <h2 class="page-title"><i class="fas fa-chart-pie text-primary"></i> Monitoring Kurikulum</h2>
+                    <div class="tabs-wrapper">
+                        <div class="tab-btn active" onclick="Kurikulum.switchView('dashboard', this)" id="tabKurDashboard">Rekap Kelompok</div>
+                        <div class="tab-btn" onclick="Kurikulum.switchView('detail', this)" id="tabKurDetail">Detail Siswa</div>
+                    </div>
+                </div>
+                
+                <div id="kur-dashboard-view">
+                    <div class="filter-bar" style="display:inline-flex; width:100%; max-width:400px;">
+                        <label class="font-medium" style="margin-right:10px;">Filter Jenjang:</label>
+                        <select id="kurDashboardFilterJenjang" class="form-control" onchange="Kurikulum.loadDashboard()">
+                            <option value="">Semua Jenjang</option>
+                        </select>
+                    </div>
+                    <div id="kurDashboardContent" style="margin-top:24px;"></div>
+                </div>
+
+                <div id="kur-detail-view" class="hidden">
+                    <div class="stat-card" style="margin-bottom:24px;">
+                        <div class="flex gap-4 items-center" style="flex-wrap:wrap;">
+                            <div class="flex items-center gap-2">
+                                <label class="font-bold text-sm">Filter Jenjang:</label>
+                                <select id="kurFilterJenjang" class="form-control" style="width:auto;" onchange="Kurikulum.populateStudentList()">
+                                    <option value="">Semua Jenjang</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center gap-2" style="margin-left: 20px;">
+                                <label class="font-bold text-sm">Pilih Siswa:</label>
+                                <select id="kurStudentSelect" class="form-control" style="width:300px;" onchange="Kurikulum.loadStudentDetail()">
+                                    <option value="">-- Pilih Siswa --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="kurContent" class="hidden">
+                        <div style="background:var(--bg-surface); padding:20px; border-radius:12px; margin-bottom:24px; border:1px solid var(--border); box-shadow:var(--shadow-sm);">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="text-primary font-bold" style="margin-bottom:4px;"><span id="kurStudentNameDisplay">-</span></h4>
+                                    <span class="text-xs text-muted font-medium bg-gray-100 px-2 py-1 rounded">Jenjang: <span id="kurJenjangDisplay">-</span></span>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-xs text-muted font-bold uppercase tracking-wide">Pencapaian</div>
+                                    <div class="text-3xl font-bold text-primary" id="kurPercent">0%</div>
+                                </div>
+                            </div>
+                            <div style="background:#e2e8f0; height:10px; border-radius:5px; overflow:hidden; margin-top:16px;">
+                                <div id="kurBar" style="width:0%; background:var(--primary); height:100%; transition:width 0.6s ease;"></div>
+                            </div>
+                        </div>
+                        <div id="kurChecklistArea"></div>
+                        <div style="margin-top:24px;">
+                            <button class="btn btn-primary btn-block" onclick="Kurikulum.save()"><i class="fas fa-save"></i> Simpan Progress Siswa</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        <!-- MODULE 5: CETAK RAPOT & LEGER -->
+            <!-- MODULE 5: CETAK RAPOT & LEGER -->
+            <section id="mod-rapot" class="hidden">
+                <div class="section-header">
+                    <h2 class="page-title"><i class="fas fa-print text-primary"></i> Rapot & Leger</h2>
+                </div>
+
+                <!-- TABS -->
+                <div class="tabs-wrapper" style="margin-bottom:24px;">
+                    <button class="tab-btn active" onclick="Rapot.switchTab('input', this)" id="tabRapotInput">Input Rapot</button>
+                    <!-- Tombol Leger hanya muncul untuk Daerah/Desa -->
+                    <button class="tab-btn hidden" onclick="Rapot.switchTab('leger', this)" id="tabRapotLeger">Unduh Leger</button>
+                </div>
+
+                <!-- VIEW 1: INPUT RAPOT (KHUSUS KELOMPOK) -->
+                <div id="rapot-input-view">
+                    <div id="rapot-kelompok-only-msg" class="text-center p-4 bg-yellow-50 text-yellow-700 rounded hidden" style="margin-bottom:20px;">
+                        Fitur Input Rapot hanya tersedia untuk akun Kelompok.
+                    </div>
+
+                    <div class="stat-card" style="margin-bottom: 24px;" id="rapot-form-area">
+                        <div class="form-group">
+                            <label>Pilih Siswa</label>
+                            <select id="rapotStudentSelect" class="form-control" onchange="Rapot.loadStudentData()">
+                                <option value="">-- Pilih Siswa --</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-top:16px;">
+                            <label>Semester</label>
+                            <input type="text" id="rapotSemester" class="form-control" value="Ganjil 2023" placeholder="Contoh: Ganjil 2023">
+                        </div>
+                    </div>
+
+                    <div id="rapotFormContainer" class="hidden" style="background: white; padding: 24px; border-radius: 12px; border: 1px solid var(--border);">
+                        <h4 style="margin-bottom:16px; color:var(--primary);">Input Penilaian</h4>
+                        <div id="rapotGradeRows"></div>
+                        <div class="form-group" style="margin-top:16px;">
+                            <label>Catatan Guru</label>
+                            <textarea id="rapotNotes" class="form-control" rows="3" placeholder="Catatan perkembangan siswa..."></textarea>
+                        </div>
+                        <div class="flex gap-2" style="margin-top:20px;">
+                            <button class="btn btn-primary" onclick="Rapot.save()"><i class="fas fa-save"></i> Simpan Nilai</button>
+                            <button class="btn btn-danger hidden" id="btnPrintRapot" onclick="Rapot.printPDF()"><i class="fas fa-file-pdf"></i> Cetak PDF</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 2: LEGER (KHUSUS DAERAH & DESA) -->
+                <div id="rapot-leger-view" class="hidden">
+                    <!-- Filters -->
+                    <!-- Filters -->
+                    <div class="filter-bar">
+                        <div class="form-group" style="margin-bottom:0; flex:1;">
+                            <label>Semester</label>
+                            <select id="legerSemester" class="form-control">
+                                <option value="">Semua Semester</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0; width:200px;" id="wrapFilterDesa">
+                            <label>Filter Desa</label>
+                            <select id="legerFilterDesa" class="form-control">
+                                <option value="">Semua Desa</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0; width:200px;">
+                            <label>Filter Kelompok</label>
+                            <select id="legerFilterKelompok" class="form-control">
+                                <option value="">Semua Kelompok</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0; width:150px; display:flex; align-items:flex-end;">
+                            <button class="btn btn-primary btn-block" onclick="Leger.loadData()"><i class="fas fa-search"></i> Tampilkan</button>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0; width:180px; display:flex; align-items:flex-end;">
+                            <button class="btn btn-success btn-block" onclick="Leger.downloadExcel()"><i class="fas fa-file-excel"></i> Download Leger</button>
+                        </div>
+                    </div>
+
+                    <!-- Stats: Predikat Rata-rata -->
+                    <div id="legerStatsArea" class="hidden" style="margin-bottom:24px;">
+                        <h4 style="margin-bottom:16px; color:var(--primary);">Rekap Predikat Rata-rata</h4>
+                        <div class="stat-cards-grid" id="legerStatsGrid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+                            <!-- Cards will be injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Table Preview -->
+                    <div class="table-card">
+                        <div class="table-responsive">
+                            <table id="legerTable">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Nama</th>
+                                        <th>Kelompok</th>
+                                        <th>Desa</th>
+                                        <th>Semester</th>
+                                        <th>Rata-rata</th>
+                                        <th>Predikat</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="legerTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- MODULE 6: JADWAL KBM (UPDATED) -->
+<section id="mod-jadwal" class="hidden">
+    <div class="section-header">
+        <h2 class="page-title"><i class="fas fa-calendar-alt text-primary"></i> Jadwal KBM</h2>
+        <div class="flex gap-2">
+            <!-- Tombol Download Excel -->
+            <button class="btn btn-secondary btn-sm" onclick="Jadwal.downloadExcel()"><i class="fas fa-file-excel" style="color: #107c41;"></i> Download Jadwal</button>
+            <!-- Tombol Tambah (Hanya Kelompok) -->
+            <button class="btn btn-primary" id="btnAddJadwal" onclick="Jadwal.openModal()"><i class="fas fa-plus"></i> Tambah Jadwal</button>
+        </div>
+    </div>
+
+    <!-- FILTER BAR (Untuk Desa & Daerah) -->
+    <div id="jadwalFilterBar" class="filter-bar hidden">
+        <div class="form-group" style="margin-bottom:0; flex:1;">
+            <label>Filter Desa</label>
+            <select id="jadwalFilterDesa" class="form-control">
+                <option value="">Semua Desa</option>
+            </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0; width:200px;">
+            <label>Filter Kelompok</label>
+            <select id="jadwalFilterKelompok" class="form-control">
+                <option value="">Semua Kelompok</option>
+            </select>
+        </div>
+        <!-- FILTER TEMPAT BARU -->
+        <div class="form-group" style="margin-bottom:0; width:200px;">
+            <label>Tempat</label>
+            <select id="jadwalFilterTempat" class="form-control">
+                <option value="">Semua Tempat</option>
+            </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0; width:200px;">
+            <label>Pelaksanaan</label>
+            <select id="jadwalFilterPelaksanaan" class="form-control">
+                <option value="">Semua</option>
+                <option value="Tatap Muka">Tatap Muka</option>
+                <option value="Online">Online</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <div class="table-responsive">
+            <table id="jadwalTable">
+                <thead>
+                    <tr>
+                        <th>Hari</th>
+                        <th>Waktu</th>
+                        <th>Pengajar</th>
+                        <th>Jenjang</th>
+                        <th>Tempat</th>
+                        <th>Pelaksanaan</th>
+                        <th>Lokasi</th>
+                        <th width="120" class="action-col-jadwal">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="jadwalTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+        </main>
+    </div>
+
+    <!-- MODAL ADD GENERUS -->
+    <div id="modalGen" class="modal">
+        <div class="modal-content">
+            <h3 class="font-bold text-lg mb-4" style="margin-bottom:20px;">Form Data Generus</h3>
+            <form onsubmit="event.preventDefault(); Generus.saveForm();">
+                <input type="hidden" id="genRowIndex"><input type="hidden" id="genNo">
+                <div class="form-group"><label>Nama Lengkap</label><input type="text" id="genNama" class="form-control" required placeholder="Nama lengkap..."></div>
+                <div class="flex gap-4">
+                    <div class="form-group" style="flex:1;"><label>Jenis Kelamin</label><select id="genJK" class="form-control"><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></div>
+                    <div class="form-group" style="flex:1;"><label>Kelas</label><select id="genKelas" class="form-control" required><option value="Belum Sekolah">Belum Sekolah</option><option value="PAUD">PAUD</option><option value="TK">TK</option><option value="1">Kelas 1</option><option value="2">Kelas 2</option><option value="3">Kelas 3</option><option value="4">Kelas 4</option><option value="5">Kelas 5</option><option value="6">Kelas 6</option><option value="7">Kelas 7</option><option value="8">Kelas 8</option><option value="9">Kelas 9</option><option value="10">Kelas 10</option><option value="11">Kelas 11</option><option value="12">Kelas 12</option><option value="Mahasiswa">Mahasiswa</option><option value="S1">S1</option><option value="S2">S2</option></select></div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="form-group" style="flex:1;"><label>Tempat Lahir</label><input type="text" id="genTmpLahir" class="form-control"></div>
+                    <div class="form-group" style="flex:1;"><label>Tanggal Lahir</label><input type="date" id="genTglLahir" class="form-control"></div>
+                </div>
+                <div class="form-group"><label>Nama Ayah</label><input type="text" id="genAyah" class="form-control"></div>
+                <div class="form-group"><label>Nama Ibu</label><input type="text" id="genIbu" class="form-control"></div>
+                <div class="flex gap-2 mt-4" style="margin-top:24px;">
+                    <button type="button" class="btn btn-secondary" style="flex:1;" onclick="UI.closeModal('modalGen')">Batal</button>
+                    <button type="submit" class="btn btn-primary" style="flex:1;">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL ADD GURU -->
+    <div id="modalGuru" class="modal">
+        <div class="modal-content">
+            <h3 class="font-bold text-lg mb-4" style="margin-bottom:20px;">Form Data Guru</h3>
+            <form onsubmit="event.preventDefault(); Guru.saveForm();">
+                <input type="hidden" id="guruRowIndex"><input type="hidden" id="guruNo">
+                <div class="form-group"><label>Nama Lengkap</label><input type="text" id="guruNama" class="form-control" required placeholder="Nama lengkap..."></div>
+                <div class="flex gap-4">
+                    <div class="form-group" style="flex:1;"><label>Jenis Kelamin</label><select id="guruJK" class="form-control"><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></div>
+                    <div class="form-group" style="flex:1;"><label>Status</label><select id="guruStatus" class="form-control" required><option value="MT">MT</option><option value="MS">MS</option><option value="Guru Bantu">Guru Bantu</option></select></div>
+                </div>
+                <div class="form-group"><label>Nomor HP</label><input type="tel" id="guruHP" class="form-control" placeholder="Contoh: 08123456789"></div>
+                <div class="form-group"><label>Mengajar Generus</label><select id="guruMengajar" class="form-control"><option value="YA">YA</option><option value="TIDAK">TIDAK</option></select></div>
+                <div class="flex gap-2 mt-4" style="margin-top:24px;">
+                    <button type="button" class="btn btn-secondary" style="flex:1;" onclick="UI.closeModal('modalGuru')">Batal</button>
+                    <button type="submit" class="btn btn-primary" style="flex:1;">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DETAIL JURNAL -->
+    <div id="modalDetail" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4" style="margin-bottom:16px;">
+                <h3 class="font-bold text-lg" id="modalDetailTitle">Detail Kehadiran</h3>
+                <i class="fas fa-times text-muted cursor-pointer text-lg" onclick="UI.closeModal('modalDetail')"></i>
+            </div>
+            <p id="modalDetailMateri" style="font-style:italic; color:var(--text-muted); margin-bottom:16px; background:var(--bg-body); padding:12px; border-radius:8px; border-left: 4px solid var(--primary);"></p>
+            <div id="modalDetailList" style="max-height: 400px; overflow-y: auto;"></div>
+            <button class="btn btn-primary btn-block mt-4" style="margin-top:20px;" onclick="UI.closeModal('modalDetail')">Tutup</button>
+        </div>
+    </div>
+<!-- TAMBAHKAN MODAL EDIT INI DI BAWAHNYA -->
+    <div id="modalEditJurnal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="flex justify-between items-center mb-4" style="margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                <h3 class="font-bold text-lg text-primary">Edit Riwayat Jurnal</h3>
+                <i class="fas fa-times text-muted cursor-pointer text-lg" onclick="UI.closeModal('modalEditJurnal')"></i>
+            </div>
+            
+            <form onsubmit="event.preventDefault(); Jurnal.saveEdit();">
+                <input type="hidden" id="editJurnalRowIndex">
+                
+                <div class="form-group">
+                    <label>Tanggal</label>
+                    <input type="date" id="editJurnalDate" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Materi Pengajian</label>
+                    <textarea id="editJurnalMateri" class="form-control" rows="3" placeholder="Ringkasan materi..."></textarea>
+                </div>
+                
+                <label class="font-bold" style="display:block; margin-bottom:12px;">Daftar Hadir (Edit):</label>
+                <div id="editJurnalMemberList" style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 16px; max-height: 300px; overflow-y: auto;"></div>
+                
+                <div class="flex gap-2 mt-4" style="margin-top:24px;">
+                    <button type="button" class="btn btn-secondary" style="flex:1;" onclick="UI.closeModal('modalEditJurnal')">Batal</button>
+                    <button type="submit" class="btn btn-primary" style="flex:1;">Update Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- MODAL ADD JADWAL -->
+<!-- MODAL ADD/EDIT JADWAL (TAMPILAN RAPI) -->
+<div id="modalJadwal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="flex justify-between items-center mb-4" style="margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+            <h3 class="font-bold text-lg text-primary" id="modalJadwalTitle">Tambah Jadwal KBM</h3>
+            <i class="fas fa-times text-muted cursor-pointer text-lg" onclick="UI.closeModal('modalJadwal')"></i>
+        </div>
+        
+        <form onsubmit="event.preventDefault(); Jadwal.saveForm();">
+            <input type="hidden" id="jadwalRowIndex">
+            
+            <!-- Layout Grid agar Rapi (2 Kolom) -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                
+                <!-- Kolom 1 -->
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Hari</label>
+                    <select id="jadwalHari" class="form-control" required>
+                        <option value="Senin">Senin</option>
+                        <option value="Selasa">Selasa</option>
+                        <option value="Rabu">Rabu</option>
+                        <option value="Kamis">Kamis</option>
+                        <option value="Jumat">Jumat</option>
+                        <option value="Sabtu">Sabtu</option>
+                        <option value="Minggu">Minggu</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Waktu</label>
+                    <input type="time" id="jadwalWaktu" class="form-control" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Pengajar</label>
+                    <select id="jadwalPengajar" class="form-control" required>
+                        <option value="MT">MT</option>
+                        <option value="MS">MS</option>
+                        <option value="Guru Bantu">Guru Bantu</option>
+                        <option value="Gabungan">Gabungan</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Jenjang</label>
+                    <select id="jadwalJenjang" class="form-control" required>
+                        <option value="PAUD">PAUD</option>
+                        <option value="Caberawit">Caberawit</option>
+                        <option value="Caberawit A">Caberawit A</option>
+                        <option value="Caberawit B">Caberawit B</option>
+                        <option value="Caberawit C">Caberawit C</option>
+                        <option value="Pra Remaja">Pra Remaja</option>
+                        <option value="Remaja">Remaja</option>
+                        <option value="Pra Nikah">Pra Nikah</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Tempat</label>
+                    <select id="jadwalTempat" class="form-control">
+                        <option value="Kelompok">Kelompok</option>
+                        <option value="Gabungan Kelompok">Gabungan Kelompok</option>
+                        <option value="Desa">Desa</option>
+                        <option value="Rumah">Rumah</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Pelaksanaan</label>
+                    <select id="jadwalPelaksanaan" class="form-control" required>
+                        <option value="Tatap Muka">Tatap Muka</option>
+                        <option value="Online">Online</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex gap-2 mt-4" style="margin-top: 24px;">
+                <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="UI.closeModal('modalJadwal')">Batal</button>
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+    </div>
+
     <script>
         // ==========================================
         // CONFIG
@@ -1495,3 +2503,5 @@
         // ==========================================
         window.onload = function() { Auth.init(); };
     </script>
+</body>
+</html>
